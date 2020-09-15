@@ -27,7 +27,7 @@
     "tests/**/*.tsx",
     // 由于我在根目录下新建了一个 playground.ts
     // 所以需要在这里添加下需要校验的文件路径
-    "*.ts"
+    "playground.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules","src/assets"]
 }
