@@ -14,7 +14,13 @@
     "baseUrl": ".",
     "types": ["webpack-env", "jest"],
     "paths": {
-      "@/*": ["src/*"]
+      // 需要在此处声明路径，否则会报错 Cannot find module 'STORE/state' or its corresponding type declarations.
+      "@/*": ["src/*"],
+      "COMPONENTS/*": ["src/components/*"],
+      "STORE/*": ["src/store/*"],
+      "ROUTER/*": ["src/router/*"],
+      "ASSETS/*": ["src/assets/*"],
+      "VIEWS/*": ["src/views/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
@@ -29,5 +35,5 @@
     // 所以需要在这里添加下需要校验的文件路径
     "playground.ts"
   ],
-  "exclude": ["node_modules","src/assets"]
+  "exclude": ["node_modules", "src/assets"]
 }

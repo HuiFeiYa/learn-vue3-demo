@@ -24,17 +24,34 @@
 <script lang="ts">
 import { Icon } from 'vant'
 import { Component, Vue } from 'vue-property-decorator'
+import { MyITodoItem, Mode } from 'STORE/state'
+import { Mutation } from 'vuex-class'
+import { _ } from '../views/todoList/utils'
 @Component({
   components: {
     [Icon.name]: Icon
   }
 })
 export default class Header extends Vue {
+  @Mutation private createTodoItem!: (todo: MyITodoItem) => void
+  private createTodoItemHandle() {
+    const newItem: MyITodoItem = {
+      id: _.uuid(),
+      name: '新任务',
+      isDone: false,
+      mode: Mode.edit,
+      iconName: 'yingtao',
+      color: '#FFCC22'
+    }
+    this.createTodoItem(newItem)
+  }
   private leftHandle() {
     this.$router.back()
   }
+  // 当点击跳转到 create 页面时候，往 todoList 中推一个默认的图标样式。
   private rightHandle() {
     this.$router.push('/todo/create')
+    this.createTodoItemHandle()
   }
   private get pageInfoComputed() {
     const currentRouteName = this.$route.name
