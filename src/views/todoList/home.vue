@@ -22,6 +22,7 @@ import Header from 'COMPONENTS/Header.vue'
 import { Mutation, Getter } from 'vuex-class'
 import TodoItem from './TodoItem.vue'
 import { MyITodoItem, Mode } from 'STORE/state'
+import { Foo } from './decorator'
 @Component({
   components: {
     Header,
@@ -44,6 +45,10 @@ export default class TodoHome extends Vue {
 
   private doneHandle(id: string) {
     this.doneTodoItem(id)
+  }
+  created() {
+    const instance = new Foo()
+    console.log('name', instance)
   }
 }
 </script>

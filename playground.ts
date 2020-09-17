@@ -176,3 +176,259 @@ function foo(s?: string) {
 }
 
 export {}
+
+function greeter(person: string) {
+  return 'hello' + person
+}
+
+const tuple1: [number, string] = [1, '2']
+enum Direction {
+  Up,
+  Down,
+  Left,
+  Right
+}
+
+declare let enum1: Direction
+
+enum1 = Direction.Up
+
+interface User2 {
+  name: string
+  age?: number
+}
+const getUserName = (user: User2) => user.age
+
+interface Say {
+  (words: string): string
+}
+
+const toSay: Say = function(words) {
+  return 'hello' + words
+}
+
+toSay('121')
+
+interface Config {
+  width?: number
+}
+
+function CalculateAreas(config: Config): { area: number } {
+  let square = 100
+  if (config.width) {
+    square = config.width * config.width
+  }
+  return { area: square }
+}
+
+let mySquare = CalculateAreas({ widdth: 5 } as Config)
+
+export default class Props {
+  public speed: number = 200
+  public isAuto = false
+}
+
+let default1 = new Props()
+
+default1.speed = 1212
+default1.isAuto = true
+
+const add = (a: number, ...rest: number[]) => rest.reduce((a, b) => a + b, a)
+
+interface Direction1 {
+  top: number
+  bottom?: number
+  left?: number
+  right?: number
+}
+function assigned(all: number): Direction1
+function assigned(arg1: number, arg2: number): Direction1
+function assigned(
+  arg1: number,
+  arg2: number,
+  arg3: number,
+  arg4: number
+): Direction1
+function assigned(a: number, b?: number, c?: number, d?: any) {
+  if (b === undefined && c === undefined && d === undefined) {
+    b = c = d = a
+  } else if (c === undefined && d === undefined) {
+    c = a
+    d = b
+  }
+  return {
+    top: a,
+    right: b,
+    bottom: c,
+    left: d
+  }
+}
+
+assigned(1)
+assigned(1, 2)
+assigned(1, 2, 3) // No overload expects 3 arguments, but overloads do exist that expect either 2 or 4 arguments.
+assigned(1, 2, 3, 4)
+
+function getArrayLength<T>(arg: T[]): T[] {
+  console.log(arg.length)
+  return arg
+}
+getArrayLength([1232])
+
+interface ReturnItemFn<T> {
+  (para: T): T
+}
+
+const fn111: ReturnItemFn<string> = arg => {
+  return arg
+}
+fn111('123')
+
+interface ReturnItemFn1 {
+  fn<T>(para: T): T
+}
+const ins: ReturnItemFn1 = {
+  fn: arg => arg
+}
+let res = ins.fn(1)
+
+type Params = number | string
+function fn12<T extends Params>(arg: T) {
+  return arg
+}
+
+function fn13(arg: number | string) {
+  return arg
+}
+fn12(1)
+fn13(12)
+
+function getValue(obj: object, key: string) {
+  return obj[key] // error
+}
+
+function getValue1<T extends object, K extends keyof T>(obj: T, key: K) {
+  return obj[key]
+}
+
+getValue1({ a: 12 }, 'b')
+
+class Person {
+  constructor(
+    public weight: number,
+    public name: string,
+    public born: string
+  ) {}
+}
+
+interface Dog {
+  name: string
+  weight: number
+}
+
+let x: Dog
+x = new Person(120, '12', '121')
+
+let y: Person
+y = { name: '1', weight: 12, born: 'dsf' }
+
+enum Status {
+  Ready,
+  Waiting
+}
+
+let status = Status.Ready
+let num = 0
+
+status = num
+num = status
+
+interface Person1 {
+  _screenCoordBrand: any
+  name: string
+  age: number
+  weight: number
+}
+
+interface Animal {
+  _screenCoordBrand: any
+  name: string
+  age: number
+  weight: number
+}
+
+function getPersonName(p: Person1) {}
+
+let b1: Animal = {
+  name: 'sdf',
+  age: 12,
+  weight: 123
+}
+
+getPersonName(b1)
+
+function formatCommandline(command: string[] | string) {
+  if (typeof command === 'string') {
+    command.trim()
+  } else {
+    command.join().trim()
+  }
+}
+interface Info {
+  username: string
+}
+interface UserAction {
+  id?: number
+  action: 'create' | 'delete'
+  info: Info
+}
+
+function operate(params: UserAction) {}
+operate({
+  id: 1,
+  action: 'create',
+  info: { username: '12' }
+})
+operate({
+  id: 1,
+  action: 'delete',
+  info: { username: '12' }
+})
+
+type UserAction1 =
+  | {
+      action: 'create'
+      info: Info
+    }
+  | {
+      action: 'delete'
+      info: { username: 'sfsf' }
+      id: Info
+    }
+
+function operate1(params: UserAction1) {
+  if (params.action === 'delete') {
+    console.log(params.id)
+  }
+}
+operate1({
+  action: 'create',
+  info: {
+    username: '1212'
+  }
+})
+
+function isString(test: any): test is string {
+  return typeof test === 'string'
+}
+// function isString(test: any): boolean {
+//   return typeof test === 'string'
+// }
+
+function example(foo: number | string) {
+  if (isString(foo)) {
+    console.log('it is a string' + foo)
+    console.log(foo.length) // string function
+  }
+}
+example('hello world')

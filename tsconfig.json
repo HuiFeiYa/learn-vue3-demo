@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
+    // 对于隐式还有 any 类型的参数进行警告。strict 设置为true时该值默认为 true
+    "noImplicitAny": true,
     "target": "esnext",
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
+    // 是否支持装饰器
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -22,6 +25,7 @@
       "ASSETS/*": ["src/assets/*"],
       "VIEWS/*": ["src/views/*"]
     },
+    // 指定要包含在编译中的库文件
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
   // 这里默认去脚要 src 下面对于指定的文件
