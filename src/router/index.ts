@@ -29,6 +29,17 @@ const routes: Array<RouteConfig> = [
     path: '/todo/create',
     name: 'todoCreate',
     component: () => import('../views/todoList/create.vue')
+  },
+  {
+    path: '/greenScreen/borderAnimation',
+    name: 'BorderAnimation',
+    component: () =>
+      import('../views/greenScreen/coverCaption/borderAnimation.vue')
+  },
+  {
+    path: '/greenScreen/beat',
+    name: 'Beat',
+    component: () => import('../views/greenScreen/coverCaption/beat.vue')
   }
 ]
 
