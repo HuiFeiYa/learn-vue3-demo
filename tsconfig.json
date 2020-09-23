@@ -39,5 +39,5 @@
     // 所以需要在这里添加下需要校验的文件路径
     "playground.ts"
   ],
-  "exclude": ["node_modules", "src/assets"]
+  "exclude": ["node_modules", "src/assets", "src/views/greenScreen/**/*.vue"]
 }

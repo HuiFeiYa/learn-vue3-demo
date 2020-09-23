@@ -7,6 +7,7 @@
       <span>U</span>
       <span>T</span>
       <span>Y</span>
+      <!-- Urban Slow Life -->
     </div>
   </div>
 </template>

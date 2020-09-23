@@ -40,6 +40,11 @@ const routes: Array<RouteConfig> = [
     path: '/greenScreen/beat',
     name: 'Beat',
     component: () => import('../views/greenScreen/coverCaption/beat.vue')
+  },
+  {
+    path: '/greenScreen/text/slide',
+    name: 'Side',
+    component: () => import('../views/greenScreen/text/side/index.vue')
   }
 ]
 
