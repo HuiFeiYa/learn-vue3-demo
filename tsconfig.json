@@ -34,10 +34,10 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx",
+    "tests/**/*.tsx"
     // 由于我在根目录下新建了一个 playground.ts
     // 所以需要在这里添加下需要校验的文件路径
-    "playground.ts"
+    // "playground.ts"
   ],
   "exclude": ["node_modules", "src/assets", "src/views/greenScreen/**/*.vue"]
 }

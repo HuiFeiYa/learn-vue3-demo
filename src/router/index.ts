@@ -45,6 +45,11 @@ const routes: Array<RouteConfig> = [
     path: '/greenScreen/text/slide',
     name: 'Side',
     component: () => import('../views/greenScreen/text/side/index.vue')
+  },
+  {
+    path: '/anime/base',
+    name: 'Base',
+    component: () => import('../views/anime/base.vue')
   }
 ]
 
