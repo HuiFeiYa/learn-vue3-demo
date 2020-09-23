@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <!-- <img src="./source/sunday.svg" alt="" /> -->
     <svg
       width="480"
@@ -9,7 +9,7 @@
       class="svg-icon"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <use href="#icon-line"></use>
+      <use href="#icon-mytext"></use>
     </svg>
     <span @click="onClick">点击</span>
     <!-- <svg-icon iconClass="sunday"></svg-icon> -->
@@ -27,10 +27,10 @@ export default {
 
   methods: {
     onClick() {
-      const letterTime = 2000
+      const letterTime = 300
 
       const lineDrawing = anime({
-        targets: '.line1',
+        targets: '.mytext1',
         // Anime 提供了 strokeDashoffset 这个属性，它会自动计算 path 的长度然后来设置 path 的 stroke-dasharry 和 stroke-dashoffset 的值
         strokeDashoffset: [anime.setDashoffset, 0],
         easing: 'easeInOutCubic',
@@ -40,18 +40,19 @@ export default {
           return letterTime * i
         },
         begin: function(anim) {
-          const letters = document.querySelectorAll('.line1')
+          const letters = document.querySelectorAll('.mytext1')
           console.log('letter', letters)
           let i
           for (i = 0; i < letters.length; ++i) {
-            letters[i].setAttribute('stroke', '#000000')
+            letters[i].setAttribute('stroke', '#777')
+            letters[i].setAttribute('stroke-width', 1)
             // letters[i].setAttribute('fill', 'red')
           }
         },
         update: function(anim) {
           // console.log('anim',anim)
           if (anim.currentTime >= letterTime) {
-            document.querySelector('.line1').setAttribute('fill', '#000')
+            document.querySelector('.mytext1').setAttribute('fill', '#000')
           }
         },
 
@@ -64,4 +65,8 @@ export default {
 }
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.container {
+  // background-color: #000;
+}
+</style>
