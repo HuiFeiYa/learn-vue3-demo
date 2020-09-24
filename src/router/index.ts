@@ -55,6 +55,11 @@ const routes: Array<RouteConfig> = [
     path: '/anime/slide',
     name: 'Slide',
     component: () => import('../views/anime/slide.vue')
+  },
+  {
+    path: '/anime/path',
+    name: 'Path',
+    component: () => import('../views/anime/path.vue')
   }
 ]
 

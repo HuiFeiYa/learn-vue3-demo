@@ -27,7 +27,7 @@ export default {
 
   methods: {
     onClick() {
-      const letterTime = 300
+      const letterTime = 200
 
       const lineDrawing = anime({
         targets: '.mytext1',
@@ -52,7 +52,13 @@ export default {
         update: function(anim) {
           // console.log('anim',anim)
           if (anim.currentTime >= letterTime) {
+            console.log('1111')
             document.querySelector('.mytext1').setAttribute('fill', '#000')
+          }
+          const letters = document.querySelectorAll('.mytext1')
+          let i
+          for (i = 0; i < letters.length; ++i) {
+            console.log('letter', letters[i])
           }
         },
 
