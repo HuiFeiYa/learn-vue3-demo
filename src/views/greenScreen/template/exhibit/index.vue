@@ -1,40 +1,33 @@
 <template>
-  <div class="container">
+  <div ref="container" class="container">
     <div class="title">
       <Title></Title>
     </div>
     <div class="stage">
       <!-- 一组 -->
-      <div>
-        <img class="cross default" src="./images/img.jpg" alt="">
+      <div class="flex">
+        <div>
+          <img class="default" src="./images/img.jpg" alt="">
+        </div>
+        <Numberfal :isMove="isChangeNumber1"></Numberfal>
       </div>
-      <div>
-        <img class="vertical sub" src="./images/image_v1.jpg" alt="">
+      <div class="flex">
+        <div>
+          <img class="default" src="./images/img.jpg" alt="">
+        </div>
+        <Numberfal :isMove="isChangeNumber1"></Numberfal>
       </div>
-      <div>
-        <img class="vertical " src="./images/image_v1.jpg" alt="">
+      <div class="flex">
+        <div>
+          <img class="default" src="./images/img.jpg" alt="">
+        </div>
+        <Numberfal :isMove="isChangeNumber1"></Numberfal>
       </div>
-      <div>
-        <img class="cross middle" src="./images/img.jpg" alt="">
-      </div>
-      <div>
-        <img class="cross default" src="./images/img.jpg" alt="">
-      </div>
-      <!-- 二组 -->
-      <div>
-        <img class="cross default" src="./images/img.jpg" alt="">
-      </div>
-      <div>
-        <img class="vertical sub" src="./images/image_v1.jpg" alt="">
-      </div>
-      <div>
-        <img class="vertical " src="./images/image_v1.jpg" alt="">
-      </div>
-      <div>
-        <img class="cross middle" src="./images/img.jpg" alt="">
-      </div>
-      <div>
-        <img class="cross default" src="./images/img.jpg" alt="">
+      <div class="flex">
+        <div>
+          <img class="default" src="./images/img.jpg" alt="">
+        </div>
+        <Numberfal :isMove="isChangeNumber1"></Numberfal>
       </div>
     </div>
   </div>
@@ -42,23 +35,40 @@
 
 <script>
   import Title from './title.vue'
+  import Numberfal from './numeral'
   export default {
     name: '',
     components:{
-      Title
+      Title,
+      Numberfal
     },
     data() {
       return {
+        isChangeNumber1:false
       }
     },
-
-    methods: {}
+    mounted() {
+      this.listener()
+    },
+    methods: {
+      listener() {
+        console.log('1')
+        document.addEventListener('scroll',event=>{
+          console.log('top',document.documentElement.scrollTop)
+          if(document.documentElement.scrollTop > 80) {
+            this.isChangeNumber1 = true
+          }
+        })
+      }
+    }
   }
 </script>
 <style>
 </style>
 <style lang='less' scoped>
-
+.flex{
+  display: flex;
+}
 .container{
   background-color: #f6f6f6;
   width:800px;
@@ -84,7 +94,7 @@
   margin-top:222px;
 }
 .default{
-  margin-top:40px;
+  width:500px;
 }
 @keyframes move_pic {
   to {

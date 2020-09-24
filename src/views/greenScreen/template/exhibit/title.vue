@@ -12,8 +12,8 @@
     <mask id="mask" maskUnits="userSpaceOnUse">
       <rect width="800" height="300" fill="url(#gradient)"/>
     </mask>
-    <text id="txt" x="340" y="200" font-family="Arial Black" font-size="60" text-anchor="middle">ISUX AWESOME</text>
-    <text id="txtsub" x="340" y="240" font-family="Arial Black" font-size="20" text-anchor="middle">ISUX AWESOME</text>
+    <text id="txt" x="400" y="200" font-family="Arial Black" font-size="60" text-anchor="middle">ISUX AWESOME</text>
+    <text id="txtsub" x="400" y="240" font-family="Arial Black" font-size="20" text-anchor="middle">ISUX AWESOME</text>
   </defs>
   <use xlink:href="#txt" fill="#FFDD00" mask="url(#mask)"/>
   <use xlink:href="#txtsub" fill="#FFDD00" mask="url(#mask)"/>
