@@ -47,6 +47,11 @@ const routes: Array<RouteConfig> = [
     component: () => import('../views/greenScreen/text/side/index.vue')
   },
   {
+    path: '/greenScreen/template/exhibit',
+    name: 'Exhibit',
+    component: () => import('../views/greenScreen/template/exhibit/index.vue')
+  },
+  {
     path: '/anime/base',
     name: 'Base',
     component: () => import('../views/anime/base.vue')
@@ -60,6 +65,11 @@ const routes: Array<RouteConfig> = [
     path: '/anime/path',
     name: 'Path',
     component: () => import('../views/anime/path.vue')
+  },
+  {
+    path: '/anime/mark',
+    name: 'Mark',
+    component: () => import('../views/anime/mark.vue')
   }
 ]
 
