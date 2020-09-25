@@ -30,6 +30,10 @@
       isLast:{
         type:Boolean,
         default:false
+      },
+      isEnd:{
+        type:Boolean,
+        default:false
       }
     },
     data() {
@@ -37,13 +41,22 @@
         isShow:false
       }
     },
+    watch:{
+      isEnd(newVal) {
+        if(newVal) {
+          setTimeout(() => {
+            this.isShow = true
+          }, (this.ind + 1) * 1000);
+           this.shake()
+          }
+
+        }
+    },
     created() {
-      setTimeout(() => {
-        this.isShow = true
-      }, (this.ind + 1) * 1000);
+
     },
     mounted() {
-      this.shake()
+      // this.shake()
     },
     methods: {
       shake() {

@@ -41,7 +41,7 @@
     },
     methods: {
       draw() {
-              const letterTime = 1000
+              const letterTime = 300
 
       const lineDrawing = anime({
         targets: '.number1',
