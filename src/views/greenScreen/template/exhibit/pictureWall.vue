@@ -1,16 +1,17 @@
 <template>
 <transition name="router-slid">
   <div class="one-pic">
-    <div class="wrap"   :style="{
+    <div class="wrap" :class="{last:isLast}"   :style="{
         transform:`rotate(${rotate})`
       }">
-      <img   v-show="isShow" :src="path" alt="">
+      <img :class="{'last-image':isLast}"  v-show="isShow" :src="path" alt="">
     </div>
   </div>
 </transition>
 </template>
 
 <script>
+  import anime from 'animejs/lib/anime.es.js'
   export default {
     name: '',
     props:{
@@ -25,6 +26,10 @@
       ind:{
         type:Number,
         default: 0
+      },
+      isLast:{
+        type:Boolean,
+        default:false
       }
     },
     data() {
@@ -35,10 +40,23 @@
     created() {
       setTimeout(() => {
         this.isShow = true
-        console.log('执行')
       }, (this.ind + 1) * 1000);
     },
-    methods: {}
+    mounted() {
+      this.shake()
+    },
+    methods: {
+      shake() {
+        anime({
+          delay:1000 * (this.ind + 1),
+          targets: '.last-image',
+          duration: 1500,
+          keyframes:[
+            {width:800,translateX:-138.8,translateY:-78,rotate:5,height:450}
+          ]
+        })
+      }
+    }
   }
 </script>
 
@@ -53,16 +71,19 @@
   
   .wrap{
     border:3px solid #eee;
-    width: 600px;
-    height: 337px;
+    width: 520px;
+    height: 292px;
     display: inline-block;
   }
   // transform: rotate(30deg);
   img{
-    width:600px;
+    width:520px;
     vertical-align: middle;
     position: relative;
     z-index: 9999;
+  }
+  .last{
+    border:none;
   }
 }
 </style>

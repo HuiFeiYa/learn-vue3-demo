@@ -34,7 +34,6 @@
     },
     watch:{
       isMove(newVal){
-        console.log('newVal',newVal)
         if(newVal) {
           this.draw()
         }
