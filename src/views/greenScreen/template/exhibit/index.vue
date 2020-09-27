@@ -6,32 +6,27 @@
       </div>
       <div class="stage">
         <!-- 一组 -->
-        <div class="flex">
+        <div class="flex" style="marginTop:40px">
           <div>
             <img class="default" src="./images/img.jpg" alt="">
           </div>
           <Numberfal :isMove="isChangeNumber1"></Numberfal>
         </div>
-        <div class="flex">
+        <div class="flex" style="marginTop:20px">
           <div>
-            <img class="default" src="./images/img.jpg" alt="">
+            <img class="default" src="./images/house.jpg" alt="">
           </div>
           <Number2 :isMove="isChangeNumber2"></Number2>
         </div>
-        <div class="flex space-between">
+        <div class="flex space-between" style="marginTop:20px">
           <Number3 :isMove="isChangeNumber3"></Number3>
           <div>
-            <img class="default" src="./images/img.jpg" alt="">
-          </div>
-        </div>
-        <div class="flex space-between">
-          <Number4 :isMove="isChangeNumber4"></Number4>
-          <div>
-            <img class="default" src="./images/img.jpg" alt="">
+            <img class="default" src="./images/boat.jpg" alt="">
           </div>
         </div>
         <div class="picture-wall">
           <PictureWall v-for="(item,index) in picWallList" :ind="index" :key="index" :rotate="item.rotate" :path="item.path" :isLast="index === picWallList.length - 1" :isEnd="isEnd1"></PictureWall>
+          <Cat v-if='isShowCat'></Cat>
         </div>
       </div>
       <div class="footer"></div>
@@ -68,25 +63,26 @@
         isChangeNumber3:false,
         isChangeNumber4:false,
         isEnd1:false,
+        isShowCat:false,
         picWallList:[
           {
             path:'https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7c578cb3102b47aebe9981aac3513eb8~tplv-k3u1fbpfcp-zoom-1.image',
             rotate: '10deg'
           },
           {
-            path:'https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c113287e50f34bcba68938557e51913f~tplv-k3u1fbpfcp-zoom-1.image',
+            path:'https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6cc6b09ff29845dab17d4a39e6ea6274~tplv-k3u1fbpfcp-zoom-1.image',
             rotate: '0deg'
           },
           {
-            path:'https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7c578cb3102b47aebe9981aac3513eb8~tplv-k3u1fbpfcp-zoom-1.image',
+            path:'https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f0abd0efffb64c449b04e4becce7ca8f~tplv-k3u1fbpfcp-zoom-1.image',
             rotate: '-15deg'
           },
           {
-            path:'https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c113287e50f34bcba68938557e51913f~tplv-k3u1fbpfcp-zoom-1.image',
+            path:'https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6d0c670c91704fa09bb376d055792c9e~tplv-k3u1fbpfcp-zoom-1.image',
             rotate: '15deg'
           },
           {
-            path:'https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7c578cb3102b47aebe9981aac3513eb8~tplv-k3u1fbpfcp-zoom-1.image',
+            path:'https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0aace209129145a7b5ec21f68b756ed1~tplv-k3u1fbpfcp-zoom-1.image',
             rotate: '-25deg'
           },
           {
@@ -94,7 +90,7 @@
             rotate: '20deg'
           },
           {
-            path:'https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7c578cb3102b47aebe9981aac3513eb8~tplv-k3u1fbpfcp-zoom-1.image',
+            path:'https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6b9df2af66a940fabe2e7f0fa59c690b~tplv-k3u1fbpfcp-zoom-1.image',
             rotate: '-5deg'
           },
         ]
@@ -108,15 +104,14 @@
         setTimeout(() => {
           scrollSmoothTo(document.documentElement,450)
           setTimeout(() => {
-            scrollSmoothTo1(document.documentElement,1692.727294921875)
+            scrollSmoothTo1(document.documentElement,1424.54541015625)
           }, 500);
         }, 1000);
       },
       listener() {
         const _this = this
-        console.log(1111,this.isEnd1)
         document.addEventListener('scroll',event=>{
-          console.log('top',document.documentElement.scrollTop,_this.isEnd1)
+          // console.log('top',document.documentElement.scrollTop,_this.isEnd1)
           if(document.documentElement.scrollTop > 350) {
             this.isChangeNumber1 = true
           }
@@ -129,8 +124,15 @@
           if(document.documentElement.scrollTop > 1221) {
             this.isChangeNumber4 = true
           }
-          if(document.documentElement.scrollTop >= 1586.3636474609375) {
+          if(document.documentElement.scrollTop >= 1424.54541015625) {
             _this.isEnd1 = true
+            const length = _this.picWallList.length
+            setTimeout(() => {
+              _this.isShowCat = true
+            },length * 1000);
+            setTimeout(() => {
+              _this.isShowCat = false
+            }, 1000 * (length + 3));
           }
 
         })
@@ -167,6 +169,7 @@
   display: flex;
   flex-direction: column;
   padding-bottom:474px;
+  background:linear-gradient(to bottom,#2980B9, #eee,#FFFFFF);
 }
 .cross{
   width:400px;

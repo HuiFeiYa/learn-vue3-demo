@@ -56,7 +56,7 @@
           const letters = document.querySelectorAll('.number3')
           let i
           for (i = 0; i < letters.length; ++i) {
-            letters[i].setAttribute('stroke', '#777')
+            letters[i].setAttribute('stroke', '#fff')
             letters[i].setAttribute('stroke-width', 2)
             document.getElementById('index1').setAttribute('fill','none')
             document.getElementById('index2').setAttribute('fill','none')
@@ -64,10 +64,10 @@
         },
         update: function(anim) {
           if(anim.currentTime >= 1 * letterTime) {
-            document.getElementById('Number-3').setAttribute('fill','#f66')
+            document.getElementById('Number-3').setAttribute('fill','#3b8d99')
           }
           if(anim.currentTime >= 2 *letterTime) {
-            document.getElementById('Number-4').setAttribute('fill','#f66')
+            document.getElementById('Number-4').setAttribute('fill','#3b8d99')
           }
         },
         loop:true,

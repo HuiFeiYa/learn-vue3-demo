@@ -60,12 +60,12 @@
 
 <style  scoped>
 .wrap{
-  transform:translate3d(400px,300px,0);
+  transform:translate3d(400px,100px,0);
   animation: catmove 3s 1s 1 forwards ;
 }
 @keyframes catmove {
   to {
-    transform: translate3d(0px,270px,0);
+    transform: translate3d(0px,240px,0);
   }
 }
 @-webkit-keyframes shake {

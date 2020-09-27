@@ -1,6 +1,6 @@
 <template>
   <div>
-    <svg width='350' version='1.1' xmlns='http://www.w3.org/2000/svg' viewBox="20 80 100 100">
+    <svg width='281' version='1.1' xmlns='http://www.w3.org/2000/svg' viewBox="20 80 100 100">
           <path
           
          class="number1 my-num1"
@@ -41,7 +41,7 @@
     },
     methods: {
       draw() {
-              const letterTime = 300
+              const letterTime = 200
 
       const lineDrawing = anime({
         targets: '.number1',
@@ -57,7 +57,7 @@
           const letters = document.querySelectorAll('.number1')
           let i
           for (i = 0; i < letters.length; ++i) {
-            letters[i].setAttribute('stroke', '#777')
+            letters[i].setAttribute('stroke', '#fff')
             letters[i].setAttribute('stroke-width', 2)
             document.getElementById('index1').setAttribute('fill','none')
             document.getElementById('index2').setAttribute('fill','none')
@@ -66,10 +66,10 @@
         update: function(anim) {
 
           if(anim.currentTime >= 2.5 * letterTime) {
-            document.getElementById('index1').setAttribute('fill','#f66')
+            document.getElementById('index1').setAttribute('fill','#203A43')
           }
           if(anim.currentTime >= 4 *letterTime) {
-            document.getElementById('index2').setAttribute('fill','#f66')
+            document.getElementById('index2').setAttribute('fill','#203A43')
           }
         },
         loop:true,
