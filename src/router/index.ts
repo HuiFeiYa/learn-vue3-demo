@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path: '/function/vue/update',
+    component: () => import('../views/function/update/index.vue')
+  },
+  {
     path: '/about',
     name: 'About',
     // route level code-splitting

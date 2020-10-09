@@ -41,10 +41,3 @@ swap([1, 2])
 interface User {
   say<T>(arg1: T): T
 }
-
-function fn(arg: User) {}
-fn({
-  say(arg: string) {
-    return 'wqe'
-  }
-})
