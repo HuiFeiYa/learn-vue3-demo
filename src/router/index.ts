@@ -70,6 +70,11 @@ const routes: Array<RouteConfig> = [
     path: '/anime/mark',
     name: 'Mark',
     component: () => import('../views/anime/mark.vue')
+  },
+  {
+    path: '/ts/index',
+    name: 'TsIndex',
+    component: () => import('../views/ts/index.vue')
   }
 ]
 

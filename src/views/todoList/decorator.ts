@@ -33,7 +33,6 @@ export class Foo {
   say() {
     return 'instance method'
   }
-  @factor('我要调用 factor 函数了')
   jump() {
     console.log('i want to jump')
   }
