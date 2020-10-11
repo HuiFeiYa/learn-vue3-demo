@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path:'/canvas/base',
+    component:() => import('../views/canvas/chapter2/base.vue')
+  },
+  {
     path:'/canvas/helloworld',
     component:() => import('../views/canvas/chapter1/helloword.vue')
   },
