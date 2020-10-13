@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path:'/canvas/api',
+    component:() => import('../views/canvas/chapter3/api.vue')
+  },
+  {
     path:'/canvas/base',
     component:() => import('../views/canvas/chapter2/base.vue')
   },
