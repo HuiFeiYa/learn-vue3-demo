@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <input type="button" value="snapshotButton" id="snapshotButton" />
+  <img id='snapshotImageElement'/>
+  <canvas id="canvas" height="400" width="400">Canvas不支持。</canvas>  
+</body>
+<script>
+  var canvas = document.getElementById('canvas'),
+      context = canvas.getContext('2d'),
+       //字体高度
+       FONT_HEIGHT = 15,
+        //外边距
+        MARGIN = 35,
+        //时钟半径（留出外边距放数字）
+        RADIUS = canvas.width / 2 - MARGIN,
+        //分针和秒针的截断长度
+        HAND_TRUNCATION = canvas.width / 25,
+        //时针截断长度
+        HOUR_HAND_TRUNCATION = canvas.width / 10,
+        CENTER_X = canvas.width / 2,
+        CENTER_Y = canvas.height / 2,
+        //数字空隙
+        NUMERAL_SPACING = 20,
+        //指针的全长度
+        HAND_RADUIS = RADIUS + NUMERAL_SPACING,
+        snapshotButton = document.getElementById('snapshotButton'),
+        snapshotImageElement = document.getElementById('snapshotImageElement'),
+        loop;
+  // 绘制一个圆
+  function drawCircle() {
+    // 开始一段新的路径
+    context.beginPath()
+    // 创建圆形路径
+    context.arc(canvas.width / 2,canvas.height/2,RADIUS,0,Math.PI * 2,true)
+    // 绘制当前存在的路径
+    context.stroke()
+  }
+  function drawCenter() {
+    context.beginPath()
+    context.arc(canvas.width/2,canvas.height/2,10,0,Math.PI * 2)
+    context.fill()
+  }
+  // 绘制时分秒指针
+  function drawHands() {
+    const hour = new Date().getHours()
+    const minute = new Date().getMinutes()
+    const second = new Date().getSeconds()
+    const angleM = minute * 6
+    const angleH = (hour+ angleM / 60) % 12 * 30 
+    const angleS = second * 6
+    drawHand(angleH,RADIUS - HOUR_HAND_TRUNCATION)
+    drawHand(angleM,RADIUS - HAND_TRUNCATION)
+    drawHand(angleS,RADIUS - HAND_TRUNCATION)
+  }
+  function drawHand(angle,r) {
+    context.beginPath()
+    context.moveTo(canvas.width/2,canvas.height/2)
+    // 相对于 12点这条中线，angle 的sin值是相对于圆心 x轴的偏差值
+    // 相对于 3点这条横线，angle 的cos值是相对于圆心 y轴的偏差值
+    const x = Math.sin(angle) * r
+    const y = Math.cos(angle) * r
+    context.lineTo(CENTER_X + x,CENTER_Y + y)
+    context.stroke()
+  }
+  function drawNumberals() {
+    // 相对于 12点这条中线，angle 的cos值是相对于圆心 y轴的偏差值
+    // 相对于 3点这条横线，angle 的sin值是相对于圆心 x轴的偏差值
+    var numerals = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    numerals.forEach(numeral=>{
+      const angle = numeral * 30 * Math.PI / 180
+      const y = Math.cos(angle) * HAND_RADUIS
+      const x = Math.sin(angle) * HAND_RADUIS
+      context.fillText(numeral,CENTER_X + x,CENTER_Y - y)
+    })
+  }
+  function drawClock() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawCircle()
+    drawCenter()
+    drawHands()
+    drawNumberals()
+  }
+  // snapshotButton.onclick = function (e) {
+    setInterval(() => {
+      drawClock()
+      
+    }, 1000);
+  // }
+</script>
+</html>
