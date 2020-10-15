@@ -52,9 +52,10 @@
     const minute = new Date().getMinutes()
     const second = new Date().getSeconds()
     const angleM = minute * 6
-    const angleH = (hour+ angleM / 60) % 12 * 30 
+    const angleH = (hour) % 12 * 30 
     const angleS = second * 6
-    drawHand(angleH,RADIUS - HOUR_HAND_TRUNCATION)
+    // 计算小时转的角度，需要加上分钟部分。
+    drawHand(angleH + minute*30/60 ,RADIUS - HOUR_HAND_TRUNCATION)
     drawHand(angleM,RADIUS - HAND_TRUNCATION)
     drawHand(angleS,RADIUS - HAND_TRUNCATION)
   }
@@ -63,9 +64,11 @@
     context.moveTo(canvas.width/2,canvas.height/2)
     // 相对于 12点这条中线，angle 的sin值是相对于圆心 x轴的偏差值
     // 相对于 3点这条横线，angle 的cos值是相对于圆心 y轴的偏差值
-    const x = Math.sin(angle) * r
-    const y = Math.cos(angle) * r
-    context.lineTo(CENTER_X + x,CENTER_Y + y)
+    const x = Math.sin(angle / 180 * Math.PI ) * r
+    const y = Math.cos(angle / 180 * Math.PI ) * r
+    // 旋转角度 deg < 180 sin值是大于0，指针的端点相对于圆点的坐标是在右方所以使用加法
+    // 旋转角度 deg < 90 cos值是大于0的，指针的端点相当于圆点的坐标是在上面所以使用减法
+    context.lineTo(CENTER_X + x,CENTER_Y - y)
     context.stroke()
   }
   function drawNumberals() {
