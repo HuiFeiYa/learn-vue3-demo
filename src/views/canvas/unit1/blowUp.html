@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+        background: rgba(100, 145, 250, 0.3);
+    }
+
+    #canvas {
+        margin-left: 20px;
+        margin-right: 0;
+        margin-bottom: 20px;
+        border: thin solid #aaaaaa;
+        /*十字瞄准线*/
+        cursor: crosshair;
+        padding: 0;
+    }
+
+    #controls {
+        margin: 20px 0px 20px 20px;
+    }
+
+    #rubberbandDiv {
+        /*绝对定位，方便位置选取*/
+        position: absolute;
+        border: 3px solid yellow;
+        cursor: crosshair;
+        display: none;
+    }
+</style>
+</head>
+<body>
+  <!--控制重置画面的按钮-->
+<div id="controls">
+  <input type="button" id="resetButton" value="Reset">
+</div>
+<!--橡皮筋选取狂div-->
+<div id="rubberbandDiv"></div>
+<canvas id="canvas" width="800" height="520">Canvas not supported</canvas>
+<p>拖拽鼠标拉取橡皮筋，选中区域并放大</p>
+</body>
+<script>
+      var canvas = document.getElementById('canvas'),
+        context = canvas.getContext('2d'),
+        rubberbandDiv = document.getElementById('rubberbandDiv'),
+        resetButton = document.getElementById('resetButton'),
+        // 选择框对象
+        rubberbandRectangle = {},
+        // 鼠标按下时刻的对象
+        mousedown={},
+        dragging = false
+        mousedown
+        image = new Image()
+        image.src = './imgs/arch.png'
+        image.onload = function() {
+          // 绘制图片到 canvas 上
+          context.drawImage(image,0,0,canvas.width,canvas.height)
+        }
+        resetButton.onclick = function () {
+          context.clearRect(0,0,canvas.width,canvas.height)
+          context.drawImage(image,0,0,canvas.width,canvas.height)
+        }
+         /**     鼠标 onmouseup 事件       */
+         window.onmouseup = function(ev){
+           ev.preventDefault()
+           rubberbandEnd();
+         }
+         function rubberbandEnd() {
+           // 获取 canvas 元素的位置信息,
+           // left,top 是canvas相对于窗口的位置，
+           // 我们绘制图像的时候是相对于 canvas的左上角的位置，需要减去 left,top
+           const { left,top,width,height } = canvas.getBoundingClientRect()
+           const bbox = canvas.getBoundingClientRect()
+
+           // context.clearRect(0,0,canvas.width,canvas.height) 这里不能清除画布，后面的放大需要根据画布的内容再生成
+
+           // 选区放大，这里可以使用 canvas 作为数据源，
+           // 这里不可以使用 image 对象，因为它需要在上一次基础上再选中在放大
+           context.drawImage(canvas,rubberbandRectangle.left - left,rubberbandRectangle.top - top,rubberbandRectangle.width,rubberbandRectangle.height,0,0,canvas.width,canvas.height)
+
+           resetRubberbandRectangle();
+           rubberbandDiv.style.width = 0;
+           rubberbandDiv.style.height = 0;
+           hideRubberbandDiv();
+           dragging = false;
+         }
+
+          /**
+           * 重置初始化橡皮筋矩形对象
+           */
+          function resetRubberbandRectangle() {
+              rubberbandRectangle = {top: 0, left: 0, width: 0, height: 0};
+          }
+             /**
+           * 通过display隐藏橡皮筋
+           */
+          function hideRubberbandDiv() {
+              rubberbandDiv.style.display = 'none';
+          }
+
+         /**     鼠标 onmousemove 事件       */
+        // 这里监听 window 鼠标移动事件是因为，我们会在 canvas 上悬浮一个黄色的框表示选择区域，层级会比 canvas高，当我们在黄色框内移动的时候，canvas的移动事件就监听不到了。
+         window.onmousemove = function (ev) {
+            var x = ev.x || ev.clientX,
+                y = ev.y || ev.clientY;
+            ev.preventDefault();
+            if (dragging) {
+                rubberbandStretch(x, y);
+            }
+        };
+        
+            /**
+           * 对橡皮筋选取框进行移动和缩放
+           * @param x
+           * @param y
+           */
+          function rubberbandStretch(x, y) {
+              //「左上」「右下」「左下」「右上」的各种两两组合的拉伸方式
+              rubberbandRectangle.left = x < mousedown.x ? x : mousedown.x;
+              rubberbandRectangle.top = y < mousedown.y ? y : mousedown.y;
+
+              rubberbandRectangle.width = Math.abs(x - mousedown.x);
+              rubberbandRectangle.height = Math.abs(y - mousedown.y);
+
+              moveRubberbandDiv();
+              resizeRubberbandDiv();
+          };
+
+              /**
+           * 调整橡皮筋div的宽高
+           */
+          function resizeRubberbandDiv() {
+              rubberbandDiv.style.width = rubberbandRectangle.width + 'px';
+              rubberbandDiv.style.height = rubberbandRectangle.height + 'px';
+          }
+
+
+        /**     鼠标 onmousedown 事件       */
+        canvas.onmousedown = function(ev) {
+          // 获取鼠标位置
+          let x = ev.x || ev.clientX
+          let y = ev.y || ev.clientY
+          ev.preventDefault()
+          // 记录当前鼠标位置，并且设置 id为rubberbandDiv元素的位置
+          rubberbandStart(x,y)
+        }
+
+        
+          /**
+           * 将# rubberbandDiv 的左上角移动到鼠标按下的位置
+           * @param x
+           * @param y
+           */
+          function rubberbandStart(x, y) {
+              mousedown.x = x;
+              mousedown.y = y;
+
+              rubberbandRectangle.left = mousedown.x;
+              rubberbandRectangle.top = mousedown.y;
+              // 显示选择框元素，并让它跟随鼠标的 onmousedown 事件
+              moveRubberbandDiv();
+              showRubberbandDiv();
+
+              dragging = true;
+          }
+
+          /**
+           * 让橡皮筋选狂dom对象的属性和橡皮筋矩形对象的位置保持一致
+           */
+          function moveRubberbandDiv() {
+              rubberbandDiv.style.top = rubberbandRectangle.top + 'px';
+              rubberbandDiv.style.left = rubberbandRectangle.left + 'px';
+          }
+          /**
+           * 通过display显示橡皮筋
+           */
+          function showRubberbandDiv() {
+              rubberbandDiv.style.display = 'inline';
+          }
+
+
+</script>
+</html>
