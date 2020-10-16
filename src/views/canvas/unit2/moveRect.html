@@ -6,12 +6,11 @@
 
     <style>
         #canvas {
-            margin:100px;
+            margin:50px;
             cursor: default;
             border: 1px solid black;
         }
         body{
-          /* margin:100px; */
           padding:0;
         }
     </style>
@@ -30,6 +29,8 @@
   initHeight = 100,
 
   isDrag = false,
+  controlRectWidth = 20,
+  controlRectHeight = 20
   // 多边形存储
   polygons = {
     fillStyle:'lightgray',
@@ -45,12 +46,39 @@
   // 绘制矩形形状
   let drawInitRect = () => {
     context.fillStyle = polygons.fillStyle
-    context.strokeStyle = polygons.strokeStyle
-    context.rect(initX,initY,initWidth,initHeight)
+    // context.strokeStyle = polygons.strokeStyle
+    context.fillRect(initX,initY,initWidth,initHeight)
     polygons.loc.x = initX
     polygons.loc.y = initY
     polygons.width = initWidth
     polygons.height = initHeight
+    context.fill()
+    // context.stroke()
+    console.log(polygons.loc.x,polygons.loc.y)
+    const {loc:{x,y},height,width} = polygons
+    drawControl(x,y,height,width)
+    drawLineRect(x,y,height,width)
+  }
+  let drawControl = (x,y,height,width)=>  {
+    drawControlRect(x,y)
+    drawControlRect(x,y + height)
+    drawControlRect(x+width,y )
+    drawControlRect(x+width,y + height)
+
+  }
+  let drawLineRect = (x,y,height,width) =>{
+    context.strokeStyle = 'blue'
+    context.moveTo(x,y)
+    context.lineTo(x+width,y)
+    context.lineTo(x+width,y+height)
+    context.lineTo(x,y+height)
+    context.closePath()
+    context.stroke()
+  }
+  let drawControlRect = (x,y) => {
+    context.beginPath()
+    context.fillStyle = '#f66'
+    context.fillRect(x - controlRectWidth / 2,y - controlRectHeight/2,controlRectWidth,controlRectHeight)
     context.fill()
     context.stroke()
   }
@@ -64,6 +92,7 @@
      * 
      */ 
     isDrag = context.isPointInPath(ev.clientX - canvas.offsetTop,ev.clientY-canvas.offsetLeft)
+    console.log('isDrag',isDrag)
     /**
      * 计算当前点击位置和 canvas 左上角点的距离。
      * ev.clientX 表示与窗口左上角的距离
@@ -82,7 +111,9 @@
      if(isDrag){
        context.beginPath()
        context.clearRect(0,0,canvas.width,canvas.height)
-       context.rect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+      //  context.rect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+       drawControl(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+       drawLineRect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
        context.fill()
        context.stroke()
      }else{
@@ -100,6 +131,7 @@
      isDrag = false
      polygons.loc.x = ev.clientX - polygons.offsetX -  canvas.offsetTop
      polygons.loc.y = ev.clientY - polygons.offsetY - canvas.offsetLeft
+     console.log('polygons',polygons)
    }
   drawInitRect()
 </script>
