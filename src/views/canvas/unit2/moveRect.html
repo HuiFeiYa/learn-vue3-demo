@@ -6,6 +6,7 @@
 
     <style>
         #canvas {
+            margin:100px;
             cursor: default;
             border: 1px solid black;
         }
@@ -57,20 +58,20 @@
    * 当鼠标按下
    */
   canvas.onmousedown = ev =>{
-    isDrag = context.isPointInPath(ev.clientX,ev.clientY)
+    /**
+     * 判断画布上的点是否在矩形中
+     * 当前点在 cavas 上的位置 = ev.clientX - canvas.offsetTop(canvas相对于窗口左上角* 的位置)
+     * 
+     */ 
+    isDrag = context.isPointInPath(ev.clientX - canvas.offsetTop,ev.clientY-canvas.offsetLeft)
     /**
      * 计算当前点击位置和 canvas 左上角点的距离。
      * ev.clientX 表示与窗口左上角的距离
      * polygons.loc.x 初始化值是 canvas 绘制元素(也就是矩形)距离canvas左上角的距离
-     * 两者相减就是当前鼠标距离 canvas 左上角的距离
+     * 两者相减就是当前鼠标距离 canvas 左上角的距离,还要减去 canvas.offsetTop 相对于窗口的距离
      */ 
     polygons.offsetX = ev.clientX - polygons.loc.x - canvas.offsetTop
     polygons.offsetY = ev.clientY - polygons.loc.y - canvas.offsetLeft
-    // 保存当前点距离浏览器窗口的位置信息
-    polygons.loc.x = ev.clientX
-    polygons.loc.y = ev.clientY
-    console.log('坐标',ev.clientX,ev.clientY)
-    console.log('offset',polygons.offsetX,polygons.offsetY)
   }
   /**
    *  鼠标移动时
@@ -81,14 +82,14 @@
      if(isDrag){
        context.beginPath()
        context.clearRect(0,0,canvas.width,canvas.height)
-       context.rect(ev.clientX - polygons.offsetX, ev.clientY - polygons.offsetY, initWidth, initHeight)
+       context.rect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
        context.fill()
        context.stroke()
      }else{
        /**
         *  如果未选中矩形，判断当前点是否在矩形中，当鼠标划过矩形显示小手表示可移动
         */ 
-        if (context.isPointInPath(ev.clientX,ev.clientY)) {
+        if (context.isPointInPath(ev.clientX - canvas.offsetTop,ev.clientY-canvas.offsetLeft)) {
           canvas.style.cursor = 'pointer'
         }else{
           canvas.style.cursor = 'default'
@@ -97,8 +98,8 @@
    }
    canvas.onmouseup = ev => {
      isDrag = false
-     polygons.loc.x = ev.clientX - polygons.offsetX
-     polygons.loc.y = ev.clientY - polygons.offsetY
+     polygons.loc.x = ev.clientX - polygons.offsetX -  canvas.offsetTop
+     polygons.loc.y = ev.clientY - polygons.offsetY - canvas.offsetLeft
    }
   drawInitRect()
 </script>
