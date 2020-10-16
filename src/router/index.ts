@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path:'/canvas/event/pointInPath',
+    component:()=> import('../views/canvas/events/pointInPath.vue')
+  },
+  {
     path:'/canvas/event/click',
     component:()=> import('../views/canvas/events/click.vue')
   },
