@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path:'/canvas/event/click',
+    component:()=> import('../views/canvas/events/click.vue')
+  },
+  {
     path:'/canvas/api',
     component:() => import('../views/canvas/chapter3/api.vue')
   },
