@@ -47,17 +47,31 @@
   let drawInitRect = () => {
     context.fillStyle = polygons.fillStyle
     // context.strokeStyle = polygons.strokeStyle
-    context.fillRect(initX,initY,initWidth,initHeight)
+    context.rect(initX,initY,initWidth,initHeight)
     polygons.loc.x = initX
     polygons.loc.y = initY
     polygons.width = initWidth
     polygons.height = initHeight
     context.fill()
     // context.stroke()
-    console.log(polygons.loc.x,polygons.loc.y)
-    const {loc:{x,y},height,width} = polygons
-    drawControl(x,y,height,width)
-    drawLineRect(x,y,height,width)
+    // const {loc:{x,y},height,width} = polygons
+    // drawControl(x,y,height,width)
+    // drawLineRect(x,y,height,width)
+  }
+  function showControl(ev) {
+    const isIn = context.isPointInPath(ev.clientX - canvas.offsetTop,ev.clientY-canvas.offsetLeft)
+    context.closePath()
+    context.clearRect(0,0,canvas.width,canvas.height)
+    if(isIn) {
+      context.clearRect(0,0,canvas.width,canvas.height)
+      context.rect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+         drawControl(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+         drawLineRect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+    }else {
+      context.beginPath()
+      context.rect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+      context.stroke()
+    }
   }
   let drawControl = (x,y,height,width)=>  {
     drawControlRect(x,y)
@@ -76,11 +90,11 @@
     context.stroke()
   }
   let drawControlRect = (x,y) => {
-    context.beginPath()
+    // context.beginPath()
     context.fillStyle = '#f66'
-    context.fillRect(x - controlRectWidth / 2,y - controlRectHeight/2,controlRectWidth,controlRectHeight)
-    context.fill()
-    context.stroke()
+    context.rect(x - controlRectWidth / 2,y - controlRectHeight/2,controlRectWidth,controlRectHeight)
+    // context.fill()
+    context.closePath()
   }
   /**
    * 当鼠标按下
@@ -92,7 +106,6 @@
      * 
      */ 
     isDrag = context.isPointInPath(ev.clientX - canvas.offsetTop,ev.clientY-canvas.offsetLeft)
-    console.log('isDrag',isDrag)
     /**
      * 计算当前点击位置和 canvas 左上角点的距离。
      * ev.clientX 表示与窗口左上角的距离
@@ -101,19 +114,19 @@
      */ 
     polygons.offsetX = ev.clientX - polygons.loc.x - canvas.offsetTop
     polygons.offsetY = ev.clientY - polygons.loc.y - canvas.offsetLeft
+    showControl(ev)
   }
   /**
    *  鼠标移动时
    */
 
    canvas.onmousemove = ev => {
+     console.log('move')
      // 如果用户点击选中了矩形，那么接下来是重新绘制矩形位置的操作
      if(isDrag){
        context.beginPath()
        context.clearRect(0,0,canvas.width,canvas.height)
-      //  context.rect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
-       drawControl(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
-       drawLineRect(ev.clientX - polygons.offsetX - canvas.offsetTop, ev.clientY - polygons.offsetY - canvas.offsetLeft, initWidth, initHeight)
+       showControl(ev)
        context.fill()
        context.stroke()
      }else{

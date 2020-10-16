@@ -1,0 +1,96 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>isPointInPath</title>
+</head>
+<body>
+<canvas id="ctx"></canvas>
+<script>
+    const context = document.getElementById("ctx");
+    const ctx = context.getContext("2d");
+    const balls = [];
+    const lines = [];
+
+    const defaultColor = '#000';
+    const focusColor = '#0f0';
+
+    window.onload = function () {
+        context.width = 1000;
+        context.height = 600;
+        context.style.border = "1px solid red";
+        //添加矩形
+        for (let i = 0; i < 5; i++) {
+            const rect = {x: Math.random() * context.width, y: Math.random() * context.height, w: Math.random() * 50 + 20, h: Math.random() * 50 + 20};
+            balls.push(rect);
+        }
+
+        //添加点生成的闭合图形
+        for (let i = 0; i < 5; i++) {
+            lines.push(randomPoi());
+        }
+
+        context.addEventListener("mousemove", draw);
+    };
+
+    function draw(e) {
+        const x = e.clientX - context.getBoundingClientRect().left;
+        const y = e.clientY - context.getBoundingClientRect().top;
+        for (let i = 0; i < balls.length; i++) {
+            ctx.beginPath();
+            ctx.rect(balls[i].x, balls[i].y, balls[i].w, balls[i].h);
+            if (ctx.isPointInPath(x, y)) {
+                ctx.fillStyle = focusColor;
+                ctx.fill();
+            }
+            else {
+                ctx.fillStyle = defaultColor;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            ctx.beginPath();
+            ctx.moveTo(line[0].x, line[0].y);
+            for (let j = 1; j < line.length; j++) {
+                ctx.lineTo(line[j].x, line[j].y);
+            }
+            ctx.closePath();
+            if (ctx.isPointInPath(x, y)) {
+                ctx.fillStyle = focusColor;
+                ctx.fill();
+            }
+            else {
+                ctx.fillStyle = defaultColor;
+                ctx.fill();
+            }
+        }
+    }
+
+    //随机生成n个点
+    function randomPoi() {
+        //一堆点组成的数组
+        const pointArr = [];
+        //首先生成一个中心点
+        const center = {x: Math.random() * context.width, y: Math.random() * context.height};
+        pointArr.push(center);
+
+        //生成一个随机点数，最少两个点，最多六个点
+        const len = 2 + Math.floor(Math.random() * 5);
+
+        //根据长度生成距离中心点最大长度内的随机点
+        for (let i = 0; i < len; i++) {
+            pointArr.push({
+                x: center.x + 100 * Math.random() - 50,
+                y: center.y + 80 * Math.random() - 40
+            })
+        }
+
+        return pointArr;
+    }
+</script>
+</body>
+</html>
