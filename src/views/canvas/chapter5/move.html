@@ -13,7 +13,8 @@
     const rectPos = {
       x:30,
       y:30,
-      time:2
+      time:2,
+      unitSpeed:1
     }
     ctx.fillStyle = 'red'
     ctx.fillRect(rectPos.x,rectPos.y,30,30)
@@ -23,34 +24,62 @@
       const absY = Math.abs(ty - y)
       return Math.sqrt(absX*absX,absY*absY)
     }
+    // 指定速度版本
     function moving(distance,tx,ty) {
-      const { x,y,time } = rectPos
+      const { x,y,time,unitSpeed } = rectPos
       const xDirection = tx > x ? 1 : -1
       const yDirection = ty > y ? 1 : -1
       const absX = Math.abs(tx - x)
       const absY = Math.abs(ty - y)
-      console.log('absX',absX)
-      const speedX = absX / (time * 5) 
-      const speedY = absY / (time * 5) 
+      const rate = Math.abs(absX / absY)
+      // console.log('absX',absX)
+      
+      const speedX = unitSpeed
+      const speedY = unitSpeed  / rate
+      console.log('speedX',absX,absY)
       const start = new Date().getTime()
       
       function loopMove() {
-        // console.log('----',new Date().getTime() - start)
-        const isOver =(new Date().getTime() - start) > time * 1000
+        const isOver = tx > x ? rectPos.x >=tx : rectPos.x <= tx
         rectPos.x += speedX * xDirection
         rectPos.y += speedY * yDirection
-        console.log('rectPos.x',rectPos.x,speedX)
         ctx.clearRect(0,0,300,150)
         ctx.fillRect(rectPos.x,rectPos.y,30,30)
         if(!isOver) {
-          // requestAnimationFrame(loopMove)
-          setTimeout(() => {
-            loopMove()
-          }, 200);
+          requestAnimationFrame(loopMove)
         }
       }
       loopMove()
     }
+    // 指定动画时间的版本
+    // function moving(distance,tx,ty) {
+    //   const { x,y,time,unitSpeed } = rectPos
+    //   const xDirection = tx > x ? 1 : -1
+    //   const yDirection = ty > y ? 1 : -1
+    //   const absX = Math.abs(tx - x)
+    //   const absY = Math.abs(ty - y)
+    //   const start = new Date().getTime()
+    //   let before = new Date().getTime()
+    //   function loopMove() {
+    //     const cur = new Date().getTime()
+    //     // 计算当前时间所占总时间的比例
+    //     const rate = (cur - before) / (1000 * time) 
+    //     before = cur
+    //     const speedX = rate * absX
+    //     const speedY = rate * absY
+
+    //     const isOver = (cur - start) >= (time * 1000) 
+    //     // const isOver = tx > x ? rectPos.x >=tx : rectPos.x <= tx
+    //     rectPos.x += speedX * xDirection
+    //     rectPos.y += speedY * yDirection
+    //     ctx.clearRect(0,0,300,150)
+    //     ctx.fillRect(rectPos.x,rectPos.y,30,30)
+    //     if(!isOver) {
+    //       requestAnimationFrame(loopMove)
+    //     }
+    //   }
+    //   loopMove()
+    // }
     function moveRect(tx,ty) {
       const distance = calculate(tx,ty)
       moving(distance,tx,ty)

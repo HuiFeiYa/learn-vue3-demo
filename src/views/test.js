@@ -27,7 +27,7 @@ const minusOne = function(s, j) {
  * @param {string} target
  * @return {number}
  */
-export const openLock = function(deadends, target) {
+const openLock = function(deadends, target) {
   // 记录需要跳过的死亡密码
   const deads = new Set()
   for (let i = 0; i < deadends.length; i++) {
@@ -46,6 +46,7 @@ export const openLock = function(deadends, target) {
   visited.add('0000')
 
   while (q.length > 0) {
+    console.log('q', q)
     const sz = q.length
     // 将当前队列中的所有的节点向四周扩散
     for (let i = 0; i < sz; i++) {
@@ -78,3 +79,6 @@ export const openLock = function(deadends, target) {
   }
   return -1
 }
+
+const r = openLock(['0201', '0101', '0102', '1212', '2002'], '0202')
+console.log('r', r)
