@@ -9,7 +9,7 @@
 <script>
 // @ is an alias to /src
 import HelloWorld from '@/components/HelloWorld.vue'
-
+import { openLock } from './test'
 export default {
   name: 'Home',
   components: {
@@ -37,9 +37,15 @@ export default {
       }
     }
   },
+  created() {
+    this.openLock()
+  },
   methods: {
-    init() {
-      console.log('init')
+    openLock() {
+      const deadends = ['0201', '0101', '0102', '1212', '2002']
+      const target = '0202'
+      const number = openLock(deadends, target)
+      console.log('number', number)
     }
   }
 }

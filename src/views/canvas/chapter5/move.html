@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const rectPos = {
+      x:30,
+      y:30,
+      time:2
+    }
+    ctx.fillStyle = 'red'
+    ctx.fillRect(rectPos.x,rectPos.y,30,30)
+    function calculate(tx,ty) {
+      const { x,y } = rectPos
+      const absX = Math.abs(tx - x)
+      const absY = Math.abs(ty - y)
+      return Math.sqrt(absX*absX,absY*absY)
+    }
+    function moving(distance,tx,ty) {
+      const { x,y,time } = rectPos
+      const xDirection = tx > x ? 1 : -1
+      const yDirection = ty > y ? 1 : -1
+      const absX = Math.abs(tx - x)
+      const absY = Math.abs(ty - y)
+      console.log('absX',absX)
+      const speedX = absX / (time * 5) 
+      const speedY = absY / (time * 5) 
+      const start = new Date().getTime()
+      
+      function loopMove() {
+        // console.log('----',new Date().getTime() - start)
+        const isOver =(new Date().getTime() - start) > time * 1000
+        rectPos.x += speedX * xDirection
+        rectPos.y += speedY * yDirection
+        console.log('rectPos.x',rectPos.x,speedX)
+        ctx.clearRect(0,0,300,150)
+        ctx.fillRect(rectPos.x,rectPos.y,30,30)
+        if(!isOver) {
+          // requestAnimationFrame(loopMove)
+          setTimeout(() => {
+            loopMove()
+          }, 200);
+        }
+      }
+      loopMove()
+    }
+    function moveRect(tx,ty) {
+      const distance = calculate(tx,ty)
+      moving(distance,tx,ty)
+      console.log('distance',distance)
+    }
+    canvas.addEventListener('click',function(e) {
+      const {left,top} = this.getBoundingClientRect()
+      const tx = e.clientX - left
+      const ty = e.clientY - top
+      console.log('pos',tx,ty)
+      moveRect(tx,ty)
+    })
+  </script>
+</body>
+</html>

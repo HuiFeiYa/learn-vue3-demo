@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<style>
+  .disappear{
+    display: none;
+  }
+</style>
+<body>
+  <canvas id="canvas"></canvas>
+  <canvas id="after"></canvas>
+  <p class="disappear prompt1">图中存在透明像素</p>
+  <p class="disappear prompt2">图中不存在透明像素</p>
+  <input id="upload" type="file">
+  <p></p>
+  <p>
+    取色色值:
+    <input type="color" id="color">
+  </p>
+  <p>
+    容差范围:
+    <input type="number" id="tolerance">
+  </p>
+  <button>将当前图片设置为</button>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const upload = document.getElementById('upload')
+    const ctx = canvas.getContext('2d')
+    const prompt1 = document.getElementsByClassName('prompt1')[0]
+    const prompt2 = document.getElementsByClassName('prompt2')[0]
+    const after = document.getElementById('after')
+    const reader = new FileReader()
+    let img = document.createElement('img');
+    let imgData = null
+    let isAlpha = false
+    upload.addEventListener('change',(e)=>{
+      imgFile = e.target.files[0]
+      // 使用 fileReader 对象读取计算机上的文件
+      reader.readAsDataURL(imgFile)
+    })
+     /**
+     * 当 reader 读取完指定的 Blob 或 File 对象后，会触发 onload 事件。
+     * 该事件接收读取的结果作为入参，可以通过 e.target.result 来获取到读取文件的 base64 地址
+     */ 
+     reader.onload = function (e) {
+      // 将读取的地址赋值给 img.src,加载完后会触发 img.onload 事件
+      img.src = e.target.result
+    }
+    img.onload = function() {
+      ctx.drawImage(img,0,0,300,150)
+      imgData = ctx.getImageData(0,0,300,150).data
+      for (let [i,p] of imgData.entries()) {
+        // 找到透明度为0的点
+        if(p===0) {
+          console.log('p',p,i,imgData)
+          isAlpha = true
+          break
+        }
+      }
+      if(isAlpha) {
+        prompt1.classList.remove('disappear')
+        prompt2.classList.add('disappear')
+      }else{
+        prompt1.classList.add('disappear')
+        prompt2.classList.remove('disappear')
+      }
+      
+    }
+
+    canvas.addEventListener('click',function(e) {
+      const rect = this.getBoundingClientRect()
+      // 获取当前鼠标相对于canvas元素左上角的坐标
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      // console.log('pos',x,y,rect)
+      // 获取某个区域的像素点的 rgba，这里将区域设置为1
+      const rgbaPicker = ctx.getImageData(x,y,1,1).data
+      console.log('rgbaPicker',rgbaPicker)
+      // Color Name	| Hex Color Code |	RGB Color Code
+      //  Gray      |	  #808080	     | rgb(128, 128, 128)  
+      const rgbaColor = `rgba(${rgbaPicker.slice(0,3).join(',')},${rgbaPicker[3] / 255})`    
+      console.log('rgbaColor',rgbaColor)
+    })
+  </script>
+</body>
+</html>
