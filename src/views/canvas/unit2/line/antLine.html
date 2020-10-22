@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="300"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    // 默认偏移量为 0.0 是浮点数
+    let offset = 0.0
+    function antLine() {
+      ctx.beginPath()
+      ctx.setLineDash([5,10])
+      ctx.moveTo(50,50)
+      ctx.lineTo(200,50)
+      ctx.lineTo(200,200)
+      ctx.lineTo(50,200)
+      ctx.lineTo(50,50)
+      ctx.stroke()
+    }
+    function changeOffset() {
+      offset += 3.0 
+      ctx.setLineDash([5,10])
+      // 当 lineDashOffset 的距离改变，当值增加向左移动
+      ctx.lineDashOffset = offset
+      ctx.beginPath()
+      ctx.rect(10,10,100,100)
+      ctx.stroke()
+    }
+    /*
+    setInterval(() => {
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      changeOffset()
+    }, 200);
+    */
+
+    function arcTo() {
+      ctx.setLineDash([])
+      ctx.beginPath()
+      // 根据 (50,20)和(150,100)两端的连线来生成切线，圆的半径为 30
+      ctx.moveTo(150,20)
+      ctx.arcTo(150,100,50,20,30)
+      ctx.stroke()
+      // 根据 (50,20)和(150,100)两端的连线来生成切线，圆的半径为 50
+      // ctx.moveTo(150,20)
+      // ctx.arcTo(150,100,50,20,50)
+      // ctx.stroke()
+
+      // ctx.lineWidth = 10
+      ctx.lineTo(0,0)
+      ctx.fillStyle = 'blue'
+      ctx.fillRect(150,20,10,10)
+      ctx.fillText('(150,20)',155,15)
+      ctx.fillStyle = 'red'
+      ctx.fillRect(150,100,10,10)
+      ctx.fillText('(150,100)',160,110)
+      ctx.fillRect(50,20,10,10)
+      ctx.fillText('(50,20)',10,20)
+      // 描绘虚线切线
+      ctx.setLineDash([5,5])
+      ctx.moveTo(150,20)
+      ctx.lineTo(150,100)
+      ctx.lineTo(50,20)
+      // 用虚线补全圆
+      ctx.arc(120,38,30,0,2*Math.PI)
+      ctx.stroke()
+    }
+    // arcTo()
+
+
+    function axis() {
+      // 绘制背景
+      drawGrid(10,10)
+    }
+    function drawGrid(stepX,stepY) {
+      ctx.strokeStyle = '#aaa'
+      ctx.lineWidth = 0.5
+      // 绘制列条纹
+      for(let i=0.5;i<canvas.width;i+=stepX) {
+        ctx.beginPath()
+        // 绘制一条直线
+        ctx.moveTo(i,0)
+        ctx.lineTo(i,canvas.height)
+        ctx.stroke()
+      }
+      // 绘制横条纹
+      for(let j=0.5;j<canvas.height;j+=stepY) {
+        ctx.beginPath()
+        ctx.moveTo(0,j)
+        ctx.lineTo(canvas.width,j)
+        ctx.stroke()
+      }
+    }
+    axis()
+  </script>
+</body>
+</html>
