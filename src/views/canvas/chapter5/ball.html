@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const w = canvas.width
+    const h = canvas.height
+    let speed = 5,
+    p1 = {x:20,y:20},
+    angle = 35,
+    radians=0,
+    xUnit = 0,
+    yUnit = 0,
+    ball = {x:p1.x,y:p1.y}
+    updateBall()
+    function updateBall() {
+      radians = angle * Math.PI / 180
+      xUnit = Math.cos(radians) * speed
+      yUnit = Math.sin(radians) * speed
+    }
+    function drawScreen(){
+      ctx.fillStyle = '#eee'
+      ctx.fillRect(0,0,w,h)
+      ctx.strokeStyle = '#000'
+      ctx.strokeRect(1,1,w-2,h-2)
+      ball.x += xUnit
+      ball.y += yUnit
+      ctx.fillStyle = '#000'
+      ctx.beginPath()
+      ctx.arc(ball.x,ball.y,15,0,Math.PI*2,true)
+      ctx.fill()
+      if(ball.x > w || ball.x <0) {
+        angle = 180 - angle
+        updateBall()
+      }else if(ball.y > h || ball.y < 0) {
+        angle = 360 - angle
+        updateBall()
+      }
+    }
+    setInterval(() => {
+      drawScreen()
+    }, 20);
+  </script>
+</body>
+</html>
