@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    function drawGridBg(stepX,stepY) {
+      const w = canvas.width
+      const h = canvas.height
+      ctx.strokeStyle = '#aaa'
+      ctx.strokeWidth = 0.5
+      // 绘制列
+      for(let x=stepX;x<w;x+=stepX){
+        ctx.beginPath()
+        ctx.moveTo(x,0)
+        ctx.lineTo(x,h-stepY)
+        ctx.stroke()
+      }
+      for(let y=h-stepY;y>0;y-=stepY){
+        ctx.beginPath()
+        ctx.moveTo(stepX,y)
+        ctx.lineTo(w,y)
+        ctx.stroke()
+      }
+    }
+    drawGridBg(10,10)
+
+
+    // 镂空效果
+    function cut() {
+      ctx.beginPath()
+      ctx.arc(150,150,60,0,Math.PI*2,true)
+      ctx.fillStyle = 'rgba(100,140,230,0.5)';
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowOffsetX = 12;
+      ctx.shadowOffsetY = 12;
+      ctx.shadowBlur = 15;
+      ctx.fill()
+      // ctx.beginPath()
+      ctx.fillStyle = '#aaa'
+      ctx.arc(150,150,30,0,Math.PI*2,false)
+      ctx.fill()
+    }
+    // cut()
+    // 镂空其他形状
+    function addTrianglePath() {
+      ctx.beginPath()
+      ctx.moveTo(200,200)
+      ctx.lineTo(75,175)
+      ctx.lineTo(90,190)
+      ctx.closePath()
+
+
+      ctx.moveTo(150,150)
+      // y轴大于起始点，说明是顺时针
+      ctx.lineTo(180,200)
+      ctx.lineTo(75,125)
+      ctx.closePath()
+    }
+    function cutShape() {
+      ctx.rect(50, 25, 200, 200);
+      // ctx.arc(100,100,40,0,Math.PI*2,true);
+      addTrianglePath()
+      ctx.fill()
+    }
+    cutShape()
+    // 绘制贝塞尔曲线
+    function draw() {
+      // 绘制第一段贝塞尔曲线
+      ctx.strokeStyle = 'red'
+      ctx.strokeWidth = 3
+      ctx.beginPath()
+      ctx.moveTo(50,50)
+      // 控制点 （50,75） （75,100）
+      ctx.bezierCurveTo(50,75,75,100,100,100)
+      ctx.stroke()
+      // 绘制第二段贝塞尔曲线
+      ctx.beginPath()
+      ctx.moveTo(100,100)
+      // 控制点 （125，100） （150,125）
+      ctx.bezierCurveTo(125,100,150,125,150,150)
+      ctx.stroke()
+      ctx.beginPath()
+      // 绘制起始点
+      ctx.fillStyle = 'green'
+      ctx.arc(50,50,3,0,2*Math.PI)
+      ctx.arc(100,100,3,0,2*Math.PI)
+      ctx.arc(150,150,3,0,2*Math.PI)
+      ctx.fill()
+      // 绘制控制点
+      ctx.fillStyle = 'blue'
+      ctx.beginPath()
+      ctx.arc(50,75,3,0,2*Math.PI)
+      ctx.arc(75,100,3,0,2*Math.PI)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(125,100,3,0,2*Math.PI)
+      ctx.arc(150,125,3,0,2*Math.PI)
+      ctx.fill()
+      // 绘制虚线
+      ctx.beginPath()
+      ctx.lineWidth = 1
+      ctx.moveTo(100,100)
+      ctx.strokeStyle = '#666'
+      ctx.setLineDash([5,3])
+      ctx.lineTo(50,100)
+      ctx.lineTo(50,50)
+      ctx.stroke()
+      ctx.moveTo(100,100)
+      ctx.lineTo(150,100)
+      ctx.lineTo(150,150)
+      ctx.stroke()
+
+      // 绘制控制点实线
+      ctx.beginPath()
+      ctx.strokeStyle = '#000'
+      ctx.setLineDash([])
+      ctx.moveTo(50,50)
+      ctx.lineTo(50,75)
+      ctx.moveTo(100,100)
+      ctx.lineTo(75,100)
+      ctx.moveTo(100,100)
+      ctx.lineTo(125,100)
+      ctx.moveTo(150,150)
+      ctx.lineTo(150,125)
+      ctx.stroke()
+    }
+    // draw()
+  </script>
+</body>
+</html>

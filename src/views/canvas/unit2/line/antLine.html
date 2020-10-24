@@ -6,7 +6,7 @@
   <title>Document</title>
 </head>
 <body>
-  <canvas id="canvas" width="500" height="300"></canvas>
+  <canvas id="canvas" width="500" height="500"></canvas>
   <script>
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
@@ -74,27 +74,100 @@
 
     function axis() {
       // 绘制背景
-      drawGrid(10,10)
+      drawGrid(20,20)
     }
     function drawGrid(stepX,stepY) {
-      ctx.strokeStyle = '#aaa'
       ctx.lineWidth = 0.5
-      // 绘制列条纹
-      for(let i=0.5;i<canvas.width;i+=stepX) {
+      // 绘制列条纹，从左往右绘制
+      for(let i=20.5,t=0;i<canvas.width-20;i+=stepX,t++) {
+        if(t===0) {
+          ctx.strokeStyle = 'blue'
+        }else{
+          ctx.strokeStyle = '#aaa'
+        }
         ctx.beginPath()
         // 绘制一条直线
         ctx.moveTo(i,0)
-        ctx.lineTo(i,canvas.height)
+        ctx.lineTo(i,canvas.height-20)
         ctx.stroke()
-      }
-      // 绘制横条纹
-      for(let j=0.5;j<canvas.height;j+=stepY) {
+
+        // 设置坐标点
+        ctx.strokeStyle = 'blue'
+        if(t === 0) {
+          continue
+        }
         ctx.beginPath()
-        ctx.moveTo(0,j)
-        ctx.lineTo(canvas.width,j)
+        ctx.moveTo(i,canvas.height-15)
+        if(t % 5 === 0 ) {
+          ctx.lineTo(i,canvas.height-30)
+        }else{
+          ctx.lineTo(i,canvas.height-25)
+        }
         ctx.stroke()
       }
+      // 绘制横条纹,从底部往上绘制
+      for(let j=canvas.height - 20.5,t=0;j>0;j-=stepY,t++) {
+        if(t===0) {
+          ctx.strokeStyle = 'blue'
+        }else{
+          ctx.strokeStyle = '#aaa'
+        }
+        ctx.beginPath()
+        ctx.moveTo(20.5,j)
+        ctx.lineTo(canvas.width-20,j)
+        ctx.stroke()
+
+        // 设置坐标点
+        if(t === 0) {
+          continue
+        }
+        ctx.strokeStyle = 'blue'
+        ctx.beginPath()
+        ctx.moveTo(15,j)
+        if(t % 5 === 0 ) {
+          ctx.lineTo(35,j)
+        }else{
+          ctx.lineTo(25,j)
+        }
+        ctx.stroke()
+      }
+      // 重新绘制三个点
+      ctx.beginPath()
+      ctx.arc(100,100,4,0,2*Math.PI)
+      ctx.fillStyle = 'red'
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(200,10,4,0,2*Math.PI)
+      ctx.fillStyle = 'red'
+      ctx.fill()
+      ctx.arc(400,170,4,0,2*Math.PI)
+      ctx.fillStyle = 'red'
+      ctx.fill()
+
+      // 使用虚线连接这三个点
+      ctx.beginPath()
+      ctx.moveTo(100,100)
+      // ctx.lineDashOffset= [5,5]
+      ctx.setLineDash([5,5])
+      ctx.lineTo(200,10)
+      ctx.lineTo(400,170)
+      ctx.lineTo(100,100)
+      ctx.stroke()
+      
+      // 以(400,170) 为起点,(100,100) 和 (200,10)两点连线为切线绘制圆弧
+      ctx.strokeStyle = 'red'
+      ctx.beginPath()
+      ctx.moveTo(400,170)
+      // 设置圆弧半径为 40,如果40不足以在三点之间形成一个圆，
+      // 首先它沿着 (400,170)和(200,10) 这条线绘制路径，直到找到半径为 40 的位置开始绘制
+      // 如果写出 ctx.arcTo(100,100,200,10,40),那么会沿着 (400,170)和(100,100) 这条线绘制路径
+      ctx.arcTo(200,10,100,100,40)
+      ctx.moveTo(400,170)
+      ctx.arcTo(100,100,200,10,40)
+      ctx.stroke()
     }
+    // ctx.translate(100,100)
+    // ctx.rotate(Math.PI/8)
     axis()
   </script>
 </body>

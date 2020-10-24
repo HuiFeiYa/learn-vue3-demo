@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const w = canvas.width
+    const h = canvas.height
+    // 绘制背景
+    function grid(stepX,stepY) {
+      ctx.strokeStyle = '#aaa'
+      ctx.strokeWidth = 0.5
+      // 列
+      for(let x=stepX;x<w;x+=stepX) {
+        ctx.beginPath()
+        ctx.moveTo(x,stepY)
+        ctx.lineTo(x,h-stepY)
+        ctx.stroke()
+      }
+      // 行
+      for(let y=stepY;y<h;y+=stepY) {
+        ctx.beginPath()
+        ctx.moveTo(stepX,y)
+        ctx.lineTo(w-stepX,y)
+        ctx.stroke()
+      }
+    }
+    grid(10,10)
+
+    // 绘制仪表盘的圆环
+    function circle() {
+      ctx.beginPath()
+      ctx.fillStyle = 'rgba(255,255,0,0.3)'
+      ctx.arc(250,250,200,0,Math.PI*2,true)
+      ctx.arc(250,250,190,0,Math.PI*2,false)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.strokeStyle = '#666'
+      ctx.arc(250,250,201,0,Math.PI*2)
+      ctx.stroke()
+    }
+    circle()
+
+    // 绘制刻度
+    function range() {
+      
+      ctx.strokeWidth = 0.5
+      for(let deg=0,j=0;deg<=360;deg+=3,j++) {
+        const lowPoint = j%4 === 0 ? 10 : 5
+        const xDeg = Math.cos(deg*Math.PI / 180)
+        const yDeg = Math.sin(deg*Math.PI / 180)
+        const y =  -yDeg * 200 + 250
+        const x =  xDeg * 200 + 250
+        ctx.beginPath()
+        ctx.moveTo(x,y)
+        ctx.lineTo(x-xDeg*lowPoint,y+yDeg*lowPoint)
+        ctx.stroke()
+        if(j%4 === 0) {
+          ctx.fillStyle = '#000'
+          ctx.fillText(deg,250 + xDeg * (200-20),250-yDeg*(200-20))
+        }
+      }
+    }
+    range()
+  </script>
+</body>
+</html>
