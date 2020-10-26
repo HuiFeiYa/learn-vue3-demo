@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .control{
+      position: absolute;
+      top:30px;
+      left:50px;
+    }
+    .line{
+      width:60px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <div class="control">
+    <span>stroke color</span>
+    <select id="stroke">
+      <option value="#000">black</option>
+      <option value="red">red</option>
+      <option value="green">green</option>
+      <option value="blue">blue</option>
+      <option value="orange">orange</option>
+    </select>
+    <span>line width</span>
+    <input type="number" class="line">
+    <label for="stroke">辅助性</label>
+    <input type="checkbox" checked class="checkbox">
+    <input type="button" value="清除画布" class="button">
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const stroke = document.getElementById('stroke')
+    const fill = document.getElementById('fill')
+    const checkbox = document.getElementsByClassName('checkbox')[0]
+    const button = document.getElementsByClassName('button')[0]
+    const line = document.getElementsByClassName('line')[0]
+    const ctx = canvas.getContext('2d')
+    const w = canvas.width
+    const h = canvas.height
+    console.dir(line)
+    // 设置图像样式
+    let strokeColor = '#000'
+    let isChecked = true
+    let mouseDown = {}
+    let dragging = false
+    let drawSurfaceImageData = {}
+    let lineWidth = 4
+    stroke.onchange = function(e) {
+      // console.log('stroke',e.target.value)
+      strokeColor = e.target.value
+    }
+
+    checkbox.onchange = function(e) {
+      // 获取 checkbox 是否选中
+      // console.log('checkbox',checkbox.checked)
+      isChecked = checkbox.checked
+    }
+    button.onclick = function() {
+      ctx.clearRect(0,0,w,h)
+      grid(10,10)
+    }
+    line.oninput = function(e) {
+      lineWidth = e.target.value
+    }
+        /**
+     * 保存恢复画板
+     */ 
+     function saveDrawingSurface() {
+      drawSurfaceImageData = ctx.getImageData(0,0,w,h)
+    }
+    function restoreDrawingSurface() {
+      ctx.putImageData(drawSurfaceImageData,0,0)
+    }
+    // 绘制背景
+    function grid(stepX,stepY) {
+      ctx.strokeStyle = '#aaa'
+      ctx.lineWidth = 0.5
+      // 列
+      for(let x=stepX;x<w;x+=stepX) {
+        ctx.beginPath()
+        ctx.moveTo(x,stepY)
+        ctx.lineTo(x,h-stepY)
+        ctx.stroke()
+      }
+      // 行
+      for(let y=stepY;y<h;y+=stepY) {
+        ctx.beginPath()
+        ctx.moveTo(stepX,y)
+        ctx.lineTo(w-stepX,y)
+        ctx.stroke()
+      }
+    }
+    grid(10,10)
+        /**
+     *  接收鼠标相对于窗口左上角的坐标位置,将他们转化成相对于canvas元素左上角的位置
+     */
+     function windowToCanvasLoc(x,y) {
+      const canvasLoc = canvas.getBoundingClientRect()
+      // 获取当前canvas相对于窗口左上角的位置
+      const { top,left } = canvasLoc
+      console.log('canvas loc',top,left)
+      return {
+        x:x-left,
+        y:y-top
+      }
+    }
+    canvas.onmousedown = function(e) {
+      e.preventDefault()
+      // 将绘制前的图像存储在对象中，
+      saveDrawingSurface()
+      // 存储鼠标相对于 canvas 左上角的位置
+      mouseDown = windowToCanvasLoc(e.clientX,e.clientY)
+      // console.log('mouse loc',e.clientX,e.clientY)
+      dragging = true
+    }
+    canvas.onmousemove = function(e) {
+      if(dragging) {
+        e.preventDefault()
+        const loc = windowToCanvasLoc(e.clientX,e.clientY)
+        // 每次重新绘制的时候将，首次的图像应用在 canvas 上，这里的作用和 clearRect 相同
+        restoreDrawingSurface()
+        updateRubberbandCircle(loc)
+        // 绘制辅助线
+        drawGrideWires(loc)
+      }
+    }
+    canvas.onmouseup = function(e) {
+      const loc = windowToCanvasLoc(e.clientX,e.clientY)
+      restoreDrawingSurface()
+      updateRubberbandCircle(loc)
+      dragging = false
+    }
+    function updateRubberbandCircle(loc) {
+      // 和 mousedown 事件记录下的原点相比，计算出当前圆的半径
+      const { x,y } = mouseDown
+      // loc.x,loc.y x ,y
+      // 找到绘制矩形的四个点 (10,20) (5,7)
+      ctx.lineWidth = lineWidth
+      ctx.strokeStyle = strokeColor
+      ctx.beginPath()
+      ctx.moveTo(x,y)
+      ctx.lineTo(x,loc.y)
+      ctx.lineTo(loc.x,loc.y)
+      ctx.lineTo(loc.x,y)
+      ctx.lineTo(x,y)
+      ctx.moveTo(loc.x,loc.y)
+      ctx.lineTo(x,y)
+      ctx.stroke()
+    }
+    // 将绘制辅助线单独抽离处理，不放在 updateRubberbandCircle 中，因为只有在 onmousemove 事件中才会用到
+    function drawGrideWires(loc) {
+      if(isChecked){
+        // 以当前点(loc.x,loc.y)绘制一个十字星的坐标轴 y轴方向：(loc.x,0) (loc.x,h) x轴方向：(0,loc.y)(w,loc.y)
+        ctx.lineWidth = 1
+        ctx.strokeStyle = 'blue'
+        ctx.beginPath()
+        ctx.moveTo(loc.x+lineWidth/2,0)
+        ctx.lineTo(loc.x+lineWidth/2,h)
+        ctx.moveTo(0,loc.y+lineWidth/2)
+        ctx.lineTo(w,loc.y+lineWidth/2)
+        ctx.stroke()
+      }
+    }
+  </script>
+</body>
+</html>
