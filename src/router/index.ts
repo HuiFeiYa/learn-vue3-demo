@@ -11,30 +11,34 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
-    path:'/canvas/event/pointInPath',
-    component:()=> import('../views/canvas/events/pointInPath.vue')
+    path: '/canvas/event/pointInPath',
+    component: () => import('../views/canvas/events/pointInPath.vue')
   },
   {
-    path:'/canvas/event/click',
-    component:()=> import('../views/canvas/events/click.vue')
+    path: '/canvas/event/click',
+    component: () => import('../views/canvas/events/click.vue')
   },
   {
-    path:'/canvas/chapter4',
-    component:() => import('../views/canvas/chapter4/index.vue')
+    path: '/canvas/chapter4',
+    component: () => import('../views/canvas/chapter4/index.vue')
   },
   {
-    path:'/canvas/api',
-    component:() => import('../views/canvas/chapter3/api.vue')
+    path: '/canvas/api',
+    component: () => import('../views/canvas/chapter3/api.vue')
   },
   {
-    path:'/canvas/base',
-    component:() => import('../views/canvas/chapter2/base.vue')
+    path: '/canvas/base',
+    component: () => import('../views/canvas/chapter2/base.vue')
   },
   {
-    path:'/canvas/helloworld',
-    component:() => import('../views/canvas/chapter1/helloword.vue')
+    path: '/canvas/helloworld',
+    component: () => import('../views/canvas/chapter1/helloword.vue')
   },
-  { 
+  {
+    path: '/canvas/function/restore',
+    component: () => import('../views/function/restore/index.vue')
+  },
+  {
     path: '/function/vue/update',
     component: () => import('../views/function/update/index.vue')
   },

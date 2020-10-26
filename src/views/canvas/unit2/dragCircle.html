@@ -8,7 +8,7 @@
     .control{
       position: absolute;
       top:30px;
-      left:100px;
+      left:50px;
     }
   </style>
 </head>
@@ -33,12 +33,14 @@
     </select>
     <label for="stroke">isFill</label>
     <input type="checkbox" checked class="checkbox">
+    <input type="button" value="清除画布" class="button">
   </div>
   <script>
     const canvas = document.getElementById('canvas')
     const stroke = document.getElementById('stroke')
     const fill = document.getElementById('fill')
     const checkbox = document.getElementsByClassName('checkbox')[0]
+    const button = document.getElementsByClassName('button')[0]
     const ctx = canvas.getContext('2d')
     const w = canvas.width
     const h = canvas.height
@@ -61,6 +63,10 @@
       // 获取 checkbox 是否选中
       // console.log('checkbox',checkbox.checked)
       isChecked = checkbox.checked
+    }
+    button.onclick = function() {
+      ctx.clearRect(0,0,w,h)
+      grid(10,10)
     }
 
     /**
@@ -122,6 +128,7 @@
     }
     canvas.onmousedown = function(e) {
       e.preventDefault()
+      // 将绘制前的图像存储在对象中，
       saveDrawingSurface()
       // 存储鼠标相对于 canvas 左上角的位置
       mouseDown = windowToCanvasLoc(e.clientX,e.clientY)
@@ -132,6 +139,7 @@
       if(dragging) {
         e.preventDefault()
         const loc = windowToCanvasLoc(e.clientX,e.clientY)
+        // 每次重新绘制的时候将，首次的图像应用在 canvas 上，这里的作用和 clearRect 相同
         restoreDrawingSurface()
         updateRubberbandCircle(loc)
       }
