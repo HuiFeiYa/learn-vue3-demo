@@ -50,6 +50,8 @@
     let dragging = false
     let drawSurfaceImageData = {}
     let lineWidth = 4
+    // 绘制的矩形信息
+    let rubberbandRect = {}
     stroke.onchange = function(e) {
       // console.log('stroke',e.target.value)
       strokeColor = e.target.value

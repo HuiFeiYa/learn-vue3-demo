@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script>  
+  /**
+   * 1. 绘制贝塞尔曲线
+   *    * 首先通过 mousedown 记录起始点，然后通过 mousemove、mouseup 记录到结束点点坐标
+   *    * 由于是矩形，通过两个点可以得到矩形的四个点，然后绘制出贝塞尔曲线
+   * 2. 移动点来改变贝塞尔曲线
+   *    * 通过 mousedown 来判断是否在控制点，如果是控制点，并且找到哪个控制点，得到它点坐标
+   *    * 当我们移动控制点的时候，实时更新移动的控制点的位置，其他三个控制点的位置是不变的。
+   *    * 通过这个四个点，还是可以绘制出贝塞尔曲线。
+   */  
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const w = canvas.width
+    const h = canvas.height
+    let strokeStyle = '#000'
+    let start = {}
+    let end = {}
+    let control1 = {}
+    let control2 = {}
+    let mousedown = {}
+    let dragging = false
+    let editing = false
+    // 是否是拖动控制点
+    let draggingPoint = ""
+    // 控制点的半径
+    const CONTROL_POINT_RADIUS = 5
+    // 绘制的矩形的信息
+    const rubberbandRect = {}
+    let lineWidth = 2
+    // 绘制背景
+    function grid(stepX,stepY) {
+      ctx.strokeStyle = '#aaa'
+      ctx.lineWidth = 0.5
+      // 列
+      for(let x=stepX;x<w;x+=stepX) {
+        ctx.beginPath()
+        ctx.moveTo(x,stepY)
+        ctx.lineTo(x,h-stepY)
+        ctx.stroke()
+      }
+      // 行
+      for(let y=stepY;y<h;y+=stepY) {
+        ctx.beginPath()
+        ctx.moveTo(stepX,y)
+        ctx.lineTo(w-stepX,y)
+        ctx.stroke()
+      }
+    }
+    grid(10,10)
+
+    /**
+     *  接收鼠标相对于窗口左上角的坐标位置,将他们转化成相对于canvas元素左上角的位置
+     */
+     function windowToCanvasLoc(x,y) {
+      const canvasLoc = canvas.getBoundingClientRect()
+      // 获取当前canvas相对于窗口左上角的位置
+      const { top,left } = canvasLoc
+      // console.log('canvas loc',top,left)
+      return {
+        x:x-left,
+        y:y-top
+      }
+    }
+
+    /**
+     * 保存恢复画板
+     */ 
+     function saveDrawingSurface() {
+      drawSurfaceImageData = ctx.getImageData(0,0,w,h)
+    }
+    function restoreDrawingSurface() {
+      ctx.putImageData(drawSurfaceImageData,0,0)
+    }
+    /**
+     * 绘制贝塞尔曲线
+     */ 
+    function drawBezierCurve() {
+      ctx.beginPath()
+      ctx.strokeStyle = 'green'
+      ctx.moveTo(start.x,start.y)
+      ctx.bezierCurveTo(control1.x,control1.y,control2.x,control2.y,end.x,end.y)
+      ctx.stroke()
+    }
+
+    canvas.onmousedown = function(e) {
+      const loc = windowToCanvasLoc(e.clientX,e.clientY)
+      e.preventDefault()
+      // 处于编辑状态可以拖动控制点
+      if(editing) {
+        // 判断是否点击在控制的四个点上
+        draggingPoint = inControlPoint(loc)
+      }else{
+        // 将 cavans 图像保存起来，记录新的坐标位置
+        saveDrawingSurface()
+        mousedown.x = loc.x
+        mousedown.y = loc.y
+        dragging = true
+      }
+    }
+
+    canvas.onmousemove = function(e) {
+      let loc = windowToCanvasLoc(e.clientX,e.clientY)
+      console.log('moving',dragging,draggingPoint)
+      // 无论是拖动控制点，还是绘制贝塞尔曲线都需要显示辅助线
+      if(dragging || draggingPoint) {
+        e.preventDefault()
+        restoreDrawingSurface()
+        // ctx.clearRect(0,0,w,h)
+        // grid(10,10)
+        drawGrideWires(loc)
+      }
+
+      if(dragging) {
+        // 绘制贝塞尔曲线
+        toUpdateRubberband(loc)
+        drawControlPoint()
+      }else if (draggingPoint) {
+        // 将控制点位置实时更新
+        updateDraggingPoint(loc)
+        // 拖动控制点
+        drawControlPoint()
+        drawBezierCurve()
+      }
+    }
+    canvas.onmouseup = function(e) {
+      console.log('drawSurfaceImageData',drawSurfaceImageData)
+      restoreDrawingSurface()
+      let loc = windowToCanvasLoc(e.clientX,e.clientY)
+
+      if(!editing) {
+        toUpdateRubberband(loc)
+        drawControlPoint()
+        dragging = false
+        editing = true
+      }else{
+        if(draggingPoint){
+          drawControlPoint()
+        }else{
+          editing = false
+        }
+        draggingPoint = ''
+        drawBezierCurve()
+      }
+    } 
+    function updateDraggingPoint(loc) {
+        draggingPoint.x = loc.x;
+        draggingPoint.y = loc.y;
+    }
+    // 将绘制辅助线单独抽离处理，不放在 updateRubberbandCircle 中，因为只有在 onmousemove 事件中才会用到
+    function drawGrideWires(loc) {
+        // 以当前点(loc.x,loc.y)绘制一个十字星的坐标轴 y轴方向：(loc.x,0) (loc.x,h) x轴方向：(0,loc.y)(w,loc.y)
+        ctx.lineWidth = 1
+        ctx.strokeStyle = 'blue'
+        ctx.beginPath()
+        ctx.moveTo(loc.x+lineWidth/2,0)
+        ctx.lineTo(loc.x+lineWidth/2,h)
+        ctx.moveTo(0,loc.y+lineWidth/2)
+        ctx.lineTo(w,loc.y+lineWidth/2)
+        ctx.stroke()
+    }
+    function inControlPoint(loc) {
+      let controlPointList = [start,control1,control2,end]
+      for(let point of controlPointList){
+        const { x,y } = point
+        ctx.beginPath()
+        ctx.arc(x,y,CONTROL_POINT_RADIUS,0,Math.PI*2)
+        // 判断点击位置是否点击在控制点上
+        if(ctx.isPointInPath(loc.x,loc.y)) {
+          // 找到点就返回控制点的位置
+          return point
+        }
+      }
+    }
+    // 首先更新矩形的大小，然后绘制贝塞尔曲线
+    function toUpdateRubberband(loc) {
+      updateRubberbandRectangle(loc)
+      drawRubberbandShape(loc)
+    }
+    function drawRubberbandShape() {
+      updateEndAndControlPoints();
+      drawBezierCurve();
+    }
+    // 绘制矩形和四个点
+    function updateEndAndControlPoints() {
+      const { left,top,width,height } = rubberbandRect
+      start = {x:left,y:top}
+      control1 = {x:left+width,y:top }
+      end = {x:left+width,y:top+height}
+      control2= {x:left,y:top+height}
+    }
+    function updateRubberbandRectangle(loc) {
+      rubberbandRect.width  = Math.abs(loc.x - mousedown.x);
+      rubberbandRect.height = Math.abs(loc.y - mousedown.y);
+      rubberbandRect.left = Math.min(mousedown.x,loc.x)
+      rubberbandRect.top = Math.min(mousedown.y,loc.y)
+    }
+    function drawControlPoint() {
+      let pointList = [start,control1,control2,end]
+      pointList.forEach(point=>{
+        const { x,y } = point
+        ctx.beginPath()
+        ctx.arc(x,y,CONTROL_POINT_RADIUS,0,2*Math.PI)
+        ctx.fillStyle = 'yellow'
+        ctx.fill()
+      })
+    }
+  </script>
+</body>
+</html>
