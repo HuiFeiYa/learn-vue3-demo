@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .control{
+      position: absolute;
+      top:30px;
+      left:100px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <div class="control">
+    <span>stroke color</span>
+    <select id="stroke">
+      <option value="#000">black</option>
+      <option value="red">red</option>
+      <option value="green">green</option>
+      <option value="blue">blue</option>
+      <option value="orange">orange</option>
+    </select>
+    <span>fill color</span>
+    <select id="fill">
+      <option value="#000">black</option>
+      <option value="red">red</option>
+      <option value="green">green</option>
+      <option value="blue">blue</option>
+      <option value="orange">orange</option>
+    </select>
+    <label for="stroke">isFill</label>
+    <input type="checkbox" checked class="checkbox">
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const stroke = document.getElementById('stroke')
+    const fill = document.getElementById('fill')
+    const checkbox = document.getElementsByClassName('checkbox')[0]
+    const ctx = canvas.getContext('2d')
+    const w = canvas.width
+    const h = canvas.height
+    // 设置图像样式
+    let strokeColor = '#000'
+    let fillColor = '#000'
+    let isChecked = true
+    let mouseDown = {}
+    let dragging = false
+    let drawSurfaceImageData = {}
+    stroke.onchange = function(e) {
+      // console.log('stroke',e.target.value)
+      strokeColor = e.target.value
+    }
+    fill.onchange = function(e) {
+      // console.log('fill',e.target.value)
+      fillColor = e.target.value
+    }
+    checkbox.onchange = function(e) {
+      // 获取 checkbox 是否选中
+      // console.log('checkbox',checkbox.checked)
+      isChecked = checkbox.checked
+    }
+
+    /**
+     * 保存恢复画板
+     */ 
+    function saveDrawingSurface() {
+      drawSurfaceImageData = ctx.getImageData(0,0,w,h)
+    }
+    function restoreDrawingSurface() {
+      ctx.putImageData(drawSurfaceImageData,0,0)
+    }
+        // 绘制背景
+    function grid(stepX,stepY) {
+      ctx.strokeStyle = '#aaa'
+      ctx.strokeWidth = 0.5
+      // 列
+      for(let x=stepX;x<w;x+=stepX) {
+        ctx.beginPath()
+        ctx.moveTo(x,stepY)
+        ctx.lineTo(x,h-stepY)
+        ctx.stroke()
+      }
+      // 行
+      for(let y=stepY;y<h;y+=stepY) {
+        ctx.beginPath()
+        ctx.moveTo(stepX,y)
+        ctx.lineTo(w-stepX,y)
+        ctx.stroke()
+      }
+    }
+    grid(10,10)
+    /**
+     *  接收鼠标相对于窗口左上角的坐标位置,将他们转化成相对于canvas元素左上角的位置
+     */
+    function windowToCanvasLoc(x,y) {
+      const canvasLoc = canvas.getBoundingClientRect()
+      // 获取当前canvas相对于窗口左上角的位置
+      const { top,left } = canvasLoc
+      console.log('canvas loc',top,left)
+      return {
+        x:x-left,
+        y:y-top
+      }
+    }
+    function updateRubberbandCircle(loc) {
+      // 和 mousedown 事件记录下的原点相比，计算出当前圆的半径
+      const { x,y } = mouseDown
+      // 根据两点坐标计算出圆的半径
+      const r= Math.sqrt(Math.abs(loc.x-x)**2,Math.abs(loc.y-y)**2)
+      ctx.beginPath()
+      ctx.arc(x,y,r,0,2*Math.PI,true)
+      console.log('isChecked',isChecked)
+      if(isChecked) {
+        ctx.fillStyle =  fillColor
+        ctx.fill()
+      }
+      ctx.strokeStyle = strokeColor
+      ctx.stroke()
+    }
+    canvas.onmousedown = function(e) {
+      e.preventDefault()
+      saveDrawingSurface()
+      // 存储鼠标相对于 canvas 左上角的位置
+      mouseDown = windowToCanvasLoc(e.clientX,e.clientY)
+      // console.log('mouse loc',e.clientX,e.clientY)
+      dragging = true
+    }
+    canvas.onmousemove = function(e) {
+      if(dragging) {
+        e.preventDefault()
+        const loc = windowToCanvasLoc(e.clientX,e.clientY)
+        restoreDrawingSurface()
+        updateRubberbandCircle(loc)
+      }
+    }
+    canvas.onmouseup = function(e) {
+      const loc = windowToCanvasLoc(e.clientX,e.clientY)
+      restoreDrawingSurface()
+      updateRubberbandCircle(loc)
+      dragging = false
+    }
+  </script>
+</body>
+</html>
