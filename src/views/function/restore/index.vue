@@ -14,7 +14,8 @@ export default {
   },
   mounted() {
     this.init()
-    this.drawLine()
+    this.clip()
+    // this.drawLine()
     // this.draw()
     // this.draw1()
   },
@@ -28,6 +29,28 @@ export default {
         this.canvas.width,
         this.canvas.height
       )
+    },
+    clip() {
+      const ctx = this.ctx
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+      this.ctx.save()
+      // 剪切的第一部分
+      this.ctx.arc(100, 100, 30, 0, Math.PI * 2)
+      this.ctx.clip()
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.ctx.restore()
+      // clip 之后绘制图形
+      this.ctx.beginPath()
+      this.ctx.moveTo(0, 0)
+      this.ctx.lineWidth = 5
+      this.ctx.strokeStyle = 'red'
+      this.ctx.lineTo(100, 100)
+      this.ctx.stroke()
+      // 剪切的第二部分
+      // this.ctx.beginPath()
+      // this.ctx.rect(120, 50, 50, 60)
+      // this.ctx.clip()
+      // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     },
     drawLine() {
       const ctx = this.ctx

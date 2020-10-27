@@ -10,6 +10,22 @@
   <script>
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
+    const R = 20
+    ctx.fillRect(0,0,canvas.width,canvas.height)
+    canvas.onmousemove = function(e) {
+      const { clientX,clientY } = e
+      windowLocToCanvas(clientX,clientY)
+    }
+    function windowLocToCanvas(x,y) {
+      const { top,left } = canvas.getBoundingClientRect()
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(x-left,y-top,R,0,Math.PI*2,false)
+      ctx.clip()
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      ctx.restore()
+      // console.log('rect',rect)
+    }
     /* 绘制了一个矩形区域，使用clip 剪切后得到一个剪切后的圆形 */ 
     /*
     ctx.arc(50,50,20,0,Math.PI*2)
@@ -24,6 +40,7 @@
     ctx.clip()
     ctx.clearRect(0,0,100,100)
   */
+ /*
   ctx.save()
   // 绘制弧线path路径，以(100,100)为圆心绘制半径为 75 的圆
   ctx.arc(100, 100, 75, 0, Math.PI*2, false);
@@ -47,6 +64,8 @@
   ctx.moveTo(100,173)
   ctx.arc(100,100,73,Math.PI/2,Math.PI,false)
   ctx.stroke()
+
+  */
   </script>
 </body>
 </html>
