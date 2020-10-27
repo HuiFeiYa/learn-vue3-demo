@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- <canvas ref="canvas" width="400" height="400"></canvas> -->
-    <canvas ref="canvas" width="400" height="400" @mousemove="move"></canvas>
+    <canvas ref="canvas" width="400" height="400"></canvas>
+    <!-- <canvas ref="canvas" width="400" height="400" @mousemove="move"></canvas> -->
   </div>
 </template>
 
@@ -14,7 +14,8 @@ export default {
   },
   mounted() {
     this.init()
-    this.draw()
+    this.drawLine()
+    // this.draw()
     // this.draw1()
   },
   methods: {
@@ -27,6 +28,22 @@ export default {
         this.canvas.width,
         this.canvas.height
       )
+    },
+    drawLine() {
+      const ctx = this.ctx
+
+      ctx.arc(100, 100, 73, -Math.PI / 2, 0, false)
+      ctx.moveTo(100, 173)
+      ctx.arc(100, 100, 73, Math.PI / 2, Math.PI, false)
+      ctx.strokeStyle = 'red'
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.setLineDash([2, 5])
+      ctx.strokeStyle = 'green'
+      ctx.arc(100, 100, 73, Math.PI, (3 * Math.PI) / 2, false)
+      ctx.moveTo(173, 100)
+      ctx.arc(100, 100, 73, 0, Math.PI / 2, false)
+      ctx.stroke()
     },
     draw1() {
       this.ctx.moveTo(0, 0)

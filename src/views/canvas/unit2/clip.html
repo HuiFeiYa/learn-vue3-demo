@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    /* 绘制了一个矩形区域，使用clip 剪切后得到一个剪切后的圆形 */ 
+    /*
+    ctx.arc(50,50,20,0,Math.PI*2)
+    ctx.clip()
+    ctx.fillRect(0,0,100,100)
+    */
+   /* 绘制了一个矩形，使用clip配合 clearRect 背景抠出一个圆形区域 */
+   /* 
+    ctx.save()
+    ctx.arc(50,50,20,0,Math.PI*2)
+    ctx.fillRect(0,0,100,100)
+    ctx.clip()
+    ctx.clearRect(0,0,100,100)
+  */
+  ctx.save()
+  // 绘制弧线path路径，以(100,100)为圆心绘制半径为 75 的圆
+  ctx.arc(100, 100, 75, 0, Math.PI*2, false);
+  // 沿着这个路径进行剪切，剪切的内容是保留的，也就是在这个返回画布内容才会被显示出来。
+  ctx.clip();
+  ctx.fillRect(0, 0, 100,100);
+  ctx.fillRect(0, 0, 100,100);
+  ctx.fillStyle="green";
+  ctx.fillRect(100, 100, 100,100);
+  ctx.restore()
+  ctx.fillStyle="red";
+  ctx.fillRect(40, 40, 30,30);
+  
+  // 绘制虚线完成完整的圆
+  ctx.beginPath()
+  ctx.lineWidth = 3
+  ctx.setLineDash([2,5])
+  // ctx.arc 绘制的起点是从圆的最右侧开始，(left+width,(top+height) / 2)
+  ctx.strokeStyle = 'red'
+  ctx.arc(100,100,73,-Math.PI/2,0,false)
+  ctx.moveTo(100,173)
+  ctx.arc(100,100,73,Math.PI/2,Math.PI,false)
+  ctx.stroke()
+  </script>
+</body>
+</html>
