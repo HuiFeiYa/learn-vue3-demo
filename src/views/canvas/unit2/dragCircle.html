@@ -47,6 +47,13 @@
     const ctx = canvas.getContext('2d')
     const w = canvas.width
     const h = canvas.height
+    const ERASER_LINE_WIDTH = 1
+
+    const ERASER_SHADOW_COLOR = 'rgb(0,0,0)'
+    const ERASER_SHADOW_STYLE = 'blue'
+    const ERASER_STROKE_STYLE = 'rgb(0,0,255)'
+    const ERASER_SHADOW_OFFSET = -5
+    const ERASER_SHADOW_BLUR = 20
     // 设置图像样式
     let strokeColor = '#000'
     let fillColor = '#000'
@@ -56,6 +63,8 @@
     let drawSurfaceImageData = {}
     let shape = 'circle'
     let isClear = false
+    let lastX
+    let lastY 
     stroke.onchange = function(e) {
       // console.log('stroke',e.target.value)
       strokeColor = e.target.value
@@ -88,7 +97,10 @@
     }
         // 绘制背景
     function grid(stepX,stepY) {
+      ctx.save()
       ctx.strokeStyle = '#aaa'
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0,0,w,h)
       ctx.lineWidth = 0.5
       // 列
       for(let x=stepX;x<w;x+=stepX) {
@@ -104,6 +116,7 @@
         ctx.lineTo(w-stepX,y)
         ctx.stroke()
       }
+      ctx.restore()
     }
     grid(10,10)
     /**
@@ -113,7 +126,6 @@
       const canvasLoc = canvas.getBoundingClientRect()
       // 获取当前canvas相对于窗口左上角的位置
       const { top,left } = canvasLoc
-      console.log('canvas loc',top,left)
       return {
         x:x-left,
         y:y-top
@@ -140,25 +152,24 @@
       ctx.beginPath()
       if(shape === 'circle'){
         ctx.arc(x,y,10,0,Math.PI*2)
-        ctx.clip()
       }
-      ctx.clearRect(0,0,w,h)
-      // 将清除的内容要保存起来
-      ctx.restore()
-      // ctx.saveDrawingSurface()
+      ctx.clip()
     }
     // 绘制一个半径 10 的圆来表示来表示当前绘制的
     function clipShape(x,y) {
       // 每次移动的时候将画布重置到移动前的样式，这样不会在canvas 上留下一堆圆圈
       // 
-      // ctx.beginPath()
-      ctx.arc(x,y,10,0,Math.PI*2)
-      ctx.lineWidth =1
-      ctx.stroke()
       ctx.beginPath()
-      ctx.arc(x,y,1,0,Math.PI*2)
-      ctx.fillStyle = 'red'
+      restoreDrawingSurface()
+      ctx.arc(x,y,10,0,Math.PI*2)
       ctx.fill()
+      // ctx.clip()
+      // restoreDrawingSurface()
+
+      // ctx.beginPath()
+      // ctx.arc(x,y,1,0,Math.PI*2)
+      // ctx.fillStyle = 'red'
+      // ctx.fill()
       // restoreDrawingSurface()
     }
     canvas.onmousedown = function(e) {
@@ -168,6 +179,8 @@
       // 存储鼠标相对于 canvas 左上角的位置
       mouseDown = windowToCanvasLoc(e.clientX,e.clientY)
       // console.log('mouse loc',e.clientX,e.clientY)
+      lastX = mouseDown.x;
+      lastY = mouseDown.y;
       dragging = true
     }
     canvas.onmousemove = function(e) {
@@ -179,12 +192,51 @@
           restoreDrawingSurface()
           updateRubberbandCircle(loc)
         }else{
-          ctx.save()
-          clip(loc.x,loc.y)
-          clipShape(loc.x,loc.y)
+          eraseLast(loc)
+          drawEraser(loc)
         }
+        lastX = loc.x;
+        lastY = loc.y;
       }
     }
+    // 放置出现一堆跟踪的圈
+    function setErasePathForEraser(loc) {
+      ctx.beginPath()
+      // ctx.arc(lastX,lastY,11,0,Math.PI*2) 为啥要用 lastX,lastY???
+      ctx.arc(loc.x,loc.y,11,0,Math.PI*2)
+      ctx.clip()
+    }
+    function drawEraser(loc) {
+      console.log('drawEraser')
+      // ctx.save()
+      // restoreDrawingSurface()
+      // setEraserAttributes()
+      // clipShape(loc.x,loc.y)
+      ctx.beginPath()
+      ctx.strokeStyle = 'red'
+      // restoreDrawingSurface()
+      ctx.arc(loc.x,loc.y,10,0,Math.PI*2)
+      // ctx.clip()
+      ctx.stroke() // --todo stroke 也可以触发 clip 剪切吗？
+      // ctx.restore()
+    }
+    // 清空路径上的内容，并且比显示圈半径多1像素
+    function eraseLast(loc) {
+        ctx.save()
+        setErasePathForEraser(loc)
+        grid()
+        ctx.restore()
+    }
+    function setEraserAttributes() {
+        ctx.lineWidth     = ERASER_LINE_WIDTH;
+        ctx.shadowColor   = ERASER_SHADOW_STYLE;
+        ctx.shadowOffsetX = ERASER_SHADOW_OFFSET;
+        ctx.shadowOffsetY = ERASER_SHADOW_OFFSET;
+        ctx.shadowBlur    = ERASER_SHADOW_BLUR;
+        ctx.strokeStyle   = ERASER_STROKE_STYLE;
+    }
+
+
     canvas.onmouseup = function(e) {
       const loc = windowToCanvasLoc(e.clientX,e.clientY)
       if(!isClear){
@@ -192,7 +244,7 @@
         updateRubberbandCircle(loc)
       }else{
         // restoreDrawingSurface()
-        clip(loc.x,loc.y)
+        // eraseLast(loc)
       }
       dragging = false
     }
