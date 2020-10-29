@@ -35,12 +35,20 @@ const routes: Array<RouteConfig> = [
     component: () => import('../views/canvas/chapter1/helloword.vue')
   },
   {
+    path: '/function/jsx',
+    component: () => import('../views/function/jsx/index.vue')
+  },
+  {
     path: '/canvas/function/restore',
     component: () => import('../views/function/restore/index.vue')
   },
   {
     path: '/function/vue/update',
     component: () => import('../views/function/update/index.vue')
+  },
+  {
+    path:'/function/reactData',
+    component: () => import('../views/function/ReactData/index.vue')
   },
   {
     path: '/about',
