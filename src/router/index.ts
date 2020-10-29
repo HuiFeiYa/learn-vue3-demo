@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path:'/css/flex-basis',
+    component:()=> import('../views/css/FlexBasis/index.vue')
+  },
+  {
     path: '/canvas/event/pointInPath',
     component: () => import('../views/canvas/events/pointInPath.vue')
   },
