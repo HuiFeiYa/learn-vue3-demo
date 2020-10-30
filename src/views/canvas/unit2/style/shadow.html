@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas></canvas>
+  <script>
+    const canvas = document.getElementsByTagName('canvas')[0]
+    console.log('canvas',canvas)
+    const ctx = canvas.getContext('2d')
+    ctx.lineWidth = 3
+    ctx.arc(80,80,30,0,Math.PI*2)
+    ctx.shadowOffsetX = 5
+    ctx.shadowColor = 'rgba(0,0,0,0.7)'
+    ctx.shadowOffsetY = 5
+    ctx.fillStyle = 'red'
+    ctx.fill()
+  </script>
+</body>
+</html>

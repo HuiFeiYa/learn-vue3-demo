@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <select name="" id="select">
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+  </select>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const select = document.getElementById('select')
+    const w = canvas.width
+    const h = canvas.height
+    let dragging = false
+    let sides = 3
+    let originPos = {
+      x:0,
+      y:0
+    }
+    let imageData = {}
+    function windowLocToCanvas(loc) {
+      const { top,left } = canvas.getBoundingClientRect()
+      return {
+        x:loc.clientX - top,
+        y:loc.clientY - left
+      }
+    }
+    select.addEventListener('change',function(e){
+      sides = e.target.value
+    })
+    imageData = ctx.getImageData(0,0,w,h)
+    canvas.onmousedown = function (e) {
+      // 记录绘制图像的起始点
+      originPos = windowLocToCanvas(e)
+      console.log('originPos',originPos)
+      ctx.fillStyle = 'red'
+      ctx.beginPath()
+      ctx.arc(originPos.x,originPos.y,3,0,Math.PI*2)
+      ctx.fill()
+      dragging = true
+    }
+    canvas.onmousemove = function (e) {
+      if(dragging){
+       ctx.putImageData(imageData,0,0)
+       const cur = windowLocToCanvas(e)
+       // 计算角到圆心到距离
+       const diffX = Math.abs(cur.x - originPos.x)
+       const diffY = Math.abs(cur.y - originPos.y)
+       const len = Math.sqrt(diffX**2 + diffY**2)
+       /**  计算出各个点的坐标  **/
+       // 每次转动多少角度
+       const unitDeg = 360 / sides * Math.PI / 180
+       ctx.beginPath()
+       for(let i=0;i<sides;i++) {
+         let curDeg = i * unitDeg
+         const { x,y } = originPos
+         let curX = x + Math.sin(curDeg) * len
+         let curY = y - Math.cos(curDeg) * len
+         console.log('pos',curX,curY)
+         ctx.lineTo(curX,curY)
+       }
+       ctx.closePath()
+       ctx.stroke()
+      }
+    }
+    canvas.onmouseup = function() {
+      dragging = false
+      imageData = ctx.getImageData(0,0,w,h)
+    }
+  </script>
+</body>
+</html>
