@@ -11,6 +11,10 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
+    path:'/css/box-sizing',
+    component:()=> import('../views/css/BoxSizing/index.vue')
+  },
+  {
     path:'/css/flex-basis',
     component:()=> import('../views/css/FlexBasis/index.vue')
   },
