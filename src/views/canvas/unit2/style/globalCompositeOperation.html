@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <select name="" id="select">
+    <option value="source-over">source-over</option>
+    <!-- <option value="source-in">source-in</option>
+    <option value="source-out">source-out</option> -->
+    <option value="source-atop">source-atop</option>
+    <option value="destination-over">destination-over</option>
+    <option value="destination-in">destination-in</option>
+    <option value="destination-out">destination-out</option>
+    <option value="destination-atop">destination-atop</option>
+    <option value="lighter">lighter</option>
+    <!-- <option value="copy">copy</option> -->
+    <option value="xor">xor</option>
+    <!-- <option value="multiply">multiply</option>
+    <option value="screen">screen</option> -->
+  </select>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const select = document.getElementById('select')
+    let initImageData = {}
+    select.addEventListener('change',function(e){
+      console.log('value',e.target.value)
+      ctx.globalCompositeOperation = e.target.value
+      draw()
+    })
+    function draw() {
+
+        // 第一个圆
+        ctx.beginPath()
+        ctx.arc(100,100,80,0,Math.PI*2)
+        ctx.fillStyle = 'rgba(255,255,0,0.8)'
+        ctx.fill()
+        // 第二个圆
+        ctx.beginPath()
+        ctx.arc(200,100,80,0,Math.PI*2)
+        ctx.fillStyle = 'rgba(255,0,0,0.8)'
+        ctx.fill()
+        // 第一个圆
+        ctx.beginPath()
+        ctx.arc(140,160,80,0,Math.PI*2)
+        ctx.fillStyle = 'rgba(0,255,255,0.8)'
+        ctx.fill()
+        ctx.fillStyle = 'blue'
+        ctx.beginPath()
+        ctx.font = '50px blod'
+        ctx.fillText('法外狂徒-',300,80)
+    }
+    draw()
+    initImageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+    canvas.addEventListener('mousemove',function(e) {
+
+      ctx.putImageData(initImageData,0,0)
+      const {clientX,clientY} = e
+      ctx.beginPath()
+      ctx.arc(clientX,clientY,30,0,Math.PI*2)
+      ctx.fillStyle = 'yellow'
+      ctx.fill()
+    })
+  </script>
+</body>
+</html>

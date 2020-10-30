@@ -202,23 +202,14 @@
     // 放置出现一堆跟踪的圈
     function setErasePathForEraser(loc) {
       ctx.beginPath()
-      // ctx.arc(lastX,lastY,11,0,Math.PI*2) 为啥要用 lastX,lastY???
-      ctx.arc(loc.x,loc.y,11,0,Math.PI*2)
+      ctx.arc(lastX,lastY,12,0,Math.PI*2)
       ctx.clip()
     }
     function drawEraser(loc) {
-      console.log('drawEraser')
-      // ctx.save()
-      // restoreDrawingSurface()
-      // setEraserAttributes()
-      // clipShape(loc.x,loc.y)
       ctx.beginPath()
       ctx.strokeStyle = 'red'
-      // restoreDrawingSurface()
       ctx.arc(loc.x,loc.y,10,0,Math.PI*2)
-      // ctx.clip()
-      ctx.stroke() // --todo stroke 也可以触发 clip 剪切吗？
-      // ctx.restore()
+      ctx.stroke() 
     }
     // 清空路径上的内容，并且比显示圈半径多1像素
     function eraseLast(loc) {
@@ -243,8 +234,7 @@
         restoreDrawingSurface()
         updateRubberbandCircle(loc)
       }else{
-        // restoreDrawingSurface()
-        // eraseLast(loc)
+        eraseLast(loc)
       }
       dragging = false
     }
