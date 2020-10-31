@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    // 使用 shapeList 来记录每个图形的信息
+    const shapeList = [
+      {
+        type:'rect',
+        x:50,
+        y:50,
+        w:100,
+        h:100,
+        fillStyle:'green',
+        // 表示当前图形的层级，用于重叠时候判断哪个在上面
+        zIndex:0,
+      },
+      {
+        type:'circle',
+        x:250,
+        y:100,
+        r:50,
+        fillStyle:'red',
+        zIndex:1,
+      }
+    ]
+    let pointInPathList = []
+    // 表示当前选中图形在 shapeList 的序号
+    let selectIndex = -1
+    let isDragging = false
+    const point = {
+      w:20,
+      h:20
+    }
+    let initImageData = {}
+    initImageData = ctx.getImageData(0,0,canvas.width,canvas.height)
+    function initDraw() {
+      ctx.putImageData(initImageData,0,0)
+      for(shape of shapeList) {
+        drawShape(shape)
+      }
+    }
+    initDraw()
+    function drawRect(shape) {
+      const { x,y,fillStyle,w,h } = shape 
+      ctx.beginPath()
+      ctx.rect(x,y,w,h)
+      ctx.fillStyle = fillStyle
+    }
+    function drawCircle(shape) {
+      const { x,y,fillStyle,r } = shape 
+      ctx.beginPath()
+      ctx.arc(x,y,r,0,Math.PI*2)
+      ctx.fillStyle = fillStyle
+    }
+    function drawTypeHandle(type,handlerMap) {
+      switch (type) {
+        case 'rect':
+          handlerMap.rect && handlerMap.rect()
+          break;
+      
+        case 'circle':
+          handlerMap.circle && handlerMap.circle()
+          break
+      }
+    }
+    function drawShape(shape){
+      const { type } = shape 
+      drawTypeHandle(type,{
+        rect(){
+          drawRect(shape)
+        },
+        circle() {
+          drawCircle(shape)
+        }
+      })
+      ctx.fill()
+    }
+    function windowLocToCanvas(e){
+      const { clientX,clientY } = e
+      const { top,left } = canvas.getBoundingClientRect()
+      return {
+        x:clientX -left,
+        y:clientY -top
+      }
+    }
+    canvas.addEventListener('click',function(e) {
+      const { x,y } = windowLocToCanvas(e)
+      // isPointInPath 只会判断是否存在与最后一次绘制的路径中，每次使用 ctx.beginPath 都会中断路径，所以我们要重新绘制图形，并且在每次绘制的过程中判断是否存在于当前路径中
+      const shape = judgeIsPointInPath(x,y)
+      if(shape){
+        const { type,x,y,w,h } = shape
+        drawTypeHandle(type,{
+          rect(){
+            // drawRect(shape)
+            const { w:pw,h:ph } = point
+            // 找到四个角,在四个角绘制四个 10x10的矩形
+            // (x- pw/2,y-ph/2) (x+w-pw/2,y-ph/2) (x+w-pw/2,y+h-ph/2)(x-pw/2,y+h-ph/2)
+            ctx.beginPath()
+            // 绘制四个点
+            ctx.rect(x- pw/2,y-ph/2,pw,ph)
+            ctx.rect(x+w-pw/2,y-ph/2,pw,ph)
+            ctx.rect(x+w-pw/2,y+h-ph/2,pw,ph)
+            ctx.rect(x-pw/2,y+h-ph/2,pw,ph)
+            // 连线四个点
+            ctx.moveTo(x,y,pw,ph)
+            ctx.lineTo(x+w,y,pw,ph)
+            ctx.lineTo(x+w,y+h,pw,ph)
+            ctx.lineTo(x,y+h,pw,ph)
+            ctx.closePath()
+            ctx.strokeStyle = 'blue'
+            ctx.stroke()
+            selectIndex = shape.pointInPathIndex
+            isDragging = true
+          },
+          circle() {
+            drawCircle(shape)
+          }
+        })
+      }
+    })
+    /**
+     * 找到被点击的图形，如果有重复找到最上层的那个
+     */ 
+    function judgeIsPointInPath(x,y) {
+      if(isDragging) {
+        if(ctx.isPointInPath(x,y)){
+          console.log('点击中')
+          // 如果拖动四个控制点，可以控制矩形点缩放
+          // 如果点击中非控制点部分，可以移动
+        }else{
+          // 不显示四个控制点
+          console.log('未点击中')
+          initDraw()
+          isDragging = false
+        }
+        
+      }else{
+        findPointInPath(x,y)
+        return findCoverOne()
+      }
+    }
+    function findCoverOne() {
+      if(pointInPathList.length === 0) return -1
+      pointInPathList.sort((a,b)=>{
+        return b-a
+      })
+      return pointInPathList[0]
+    }
+    function findPointInPath(x,y) {
+      shapeList.forEach((ele,index)=>{
+        const { type } = ele
+        drawTypeHandle(type,{
+          rect(){
+            drawRect(ele)
+          },
+          circle() {
+            drawCircle(ele)
+          }
+        })
+        ctx.fill()
+        if(ctx.isPointInPath(x,y)){
+          // 添加在 shapeList 中的序号
+          ele.pointInPathIndex = index
+          pointInPathList.push(ele)
+          console.log(ele)
+        }
+      })
+    }
+  </script>
+</body>
+</html>
