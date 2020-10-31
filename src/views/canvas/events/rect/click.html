@@ -147,6 +147,21 @@
         return findCoverOne()
       }
     }
+    /** 绘制拖拽提示框  **/
+
+    /**  选中图形后点拖拽和缩放事件   **/
+    // 根据四个点来生成拖拽框
+    function move(list) {
+
+    }
+    canvas.addEventListener('mousedown',function(e){
+      const loc = windowLocToCanvas(e)
+    })
+    canvas.addEventListener('mousemove',function(e){
+      const loc = windowLocToCanvas(e)
+
+    })
+    /** 判断是否在路径中  **/
     function findCoverOne() {
       if(pointInPathList.length === 0) return -1
       pointInPathList.sort((a,b)=>{
