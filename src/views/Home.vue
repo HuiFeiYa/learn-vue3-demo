@@ -38,7 +38,7 @@ export default {
     }
   },
   created() {
-    this.openLock()
+    // this.openLock()
   },
   methods: {
     openLock() {

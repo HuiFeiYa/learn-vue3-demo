@@ -11,12 +11,12 @@ const routes: Array<RouteConfig> = [
     component: Home
   },
   {
-    path:'/css/box-sizing',
-    component:()=> import('../views/css/BoxSizing/index.vue')
+    path: '/css/box-sizing',
+    component: () => import('../views/css/BoxSizing/index.vue')
   },
   {
-    path:'/css/flex-basis',
-    component:()=> import('../views/css/FlexBasis/index.vue')
+    path: '/css/flex-basis',
+    component: () => import('../views/css/FlexBasis/index.vue')
   },
   {
     path: '/canvas/event/rect',
@@ -59,7 +59,7 @@ const routes: Array<RouteConfig> = [
     component: () => import('../views/function/update/index.vue')
   },
   {
-    path:'/function/reactData',
+    path: '/function/reactData',
     component: () => import('../views/function/ReactData/index.vue')
   },
   {
