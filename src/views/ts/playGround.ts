@@ -7,10 +7,10 @@ const car = new Props()
 console.log('car', car)
 
 interface Direction {
-  top: number
-  bottom?: number
-  left?: number
-  right?: number
+  top: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
 }
 function assigned(a: number): Direction
 function assigned(a: number, b: number): Direction
@@ -39,5 +39,5 @@ function swap<T, U>(tuple: [T, U]): [U, T] {
 swap([1, 2])
 
 interface User {
-  say<T>(arg1: T): T
+  say<T>(arg1: T): T;
 }

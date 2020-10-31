@@ -23,7 +23,7 @@ export default class HelloWorld extends Vue {
   @Prop() private msg!: string
   isShow = true
   $refs!: {
-    button: HTMLInputElement
+    button: HTMLInputElement;
   }
 
   // 这里应该是通过结构赋值的方式直接获取 state 中的值
