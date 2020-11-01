@@ -27,6 +27,13 @@ const ctrolPoint = {
 }
 let isDragging = false
 let cursorPointer = ''
+// 当前拖动点距离中心点的距离
+let mouseDown = {
+  diffX:0,
+  diffY:0
+}
+// 是否触发 mousemove 事件，只有mousedown 后才会触发
+let canMove=false
 class Canvas {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
@@ -38,8 +45,12 @@ class Canvas {
     parent.appendChild(this.canvas)
     // ctx 可能是 null ,这里将他断言为 CanvasRenderingContext2D 类型
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
-    this.listen()
     this.getImageData()
+    this.listen()
+  }
+  // 返回是否存在选中的图形
+  get hasPathIndex() {
+    return pathIndex !== -1
   }
   initDraw() {
     const { ctx, imageData } = this
@@ -55,41 +66,89 @@ class Canvas {
   }
   /***** 添加事件监听 */
   listen() {
-    this.clickListen()
-    this.moveListen()
+    this.mouseDown()
+    this.mouseMove()
+    this.mouseUp()
   }
-  clickListen() {
-    this.canvas.addEventListener('click', e => {
-      const { x, y } = this.windowLocToCanvas(e)
-      this.judgeIsPointInPath(x, y)
-      // 每次点击都重新绘制图像，如果点落在图像上，并且不处于拖拽状态就绘制控制框
-      if (pathIndex !== -1) {
-        if(!isDragging){
-          this.drawControls()
-        }
-      }else{
-        this.initDraw()
-      }
-    })
-  }
-  moveListen() {
+  mouseDown() {
     const canvas = this.canvas
     canvas.addEventListener('mousedown',e=>{
+      // 将之前选中图形的序号保留
+      let oldIndex = pathIndex
+      const { x, y } = this.windowLocToCanvas(e)
+      // 重新判断当前选中的图形
+      this.judgeIsPointInPath(x, y)
+      // 选中图形，并且和之前绘制的图形不同就绘制控制框
+      if (pathIndex !== -1 && oldIndex !== pathIndex) {
+        this.drawControls()
+      }
+
       /**
        * 在拖拽状态下通过鼠标位置来判断是拖动还是缩放
        * 1. 如果不在四个控制点上就是拖拽
        * 2. 如果在四个控制点上就是缩放
        */
-      if(isDragging) {
-        const loc = this.windowLocToCanvas(e)
+      if(this.hasPathIndex) {
+        const {x,y} = shapeList[pathIndex]
+        let loc = this.windowLocToCanvas(e)
+        // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
+        mouseDown = { diffX:loc.x - x,diffY:loc.y-y }
         const isInRect = this.draggingPosition(loc)
+        // 当点击了矩形选择框将 canMove 标记为 true
         if(isInRect) {
           canvas.style.cursor = 'move'
+          canMove = true
         }else{
           canvas.style.cursor = cursorPointer
         }
+      }else{
+        canvas.style.cursor = 'default'
       }
     })
+  }
+  mouseMove() {
+    const canvas = this.canvas
+    canvas.addEventListener('mousemove',e =>{
+      if(this.hasPathIndex && canMove) {
+        const loc = this.windowLocToCanvas(e)
+        const isInRect = this.draggingPosition(loc)
+        // move
+        if(isInRect) {
+          const {x,y} = this.windowLocToCanvas(e)
+          const { diffX,diffY } = mouseDown
+          const shape = shapeList[pathIndex]
+          console.log('diffy',y,y - diffY,y)
+          console.log('diffx',x,x - diffX,x)
+          if(shape.type === 'rect'){
+            const { w,h } = shape
+            shape.x = x - diffX
+            shape.y = y - diffY
+          }else if(shape.type === 'circle'){
+            shapeList[pathIndex].x = x - diffX 
+            shapeList[pathIndex].y = y - diffY
+          }
+          this.initDraw()
+          // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
+          // onmouseup 中同理
+          this.drawShap(shapeList[pathIndex])
+          this.drawControls()
+        }
+      }
+    })
+  }
+  mouseUp() {
+    const canvas = this.canvas
+    window.addEventListener('mouseup',e=>{
+      // 鼠标抬起后，只需要将 canMove 设置为 false ，只有当 canvas 只触发了 mousemove，在此之前未触发 mousedown 选中图形是不会跟随的。
+      canMove = false
+      this.drawShap(shapeList[pathIndex])
+      this.drawControls()
+    })
+  }
+  resetConfig() {
+    pathIndex = -1
+    isDragging = false
+    pointInPathList = []
   }
   // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
   draggingPosition(loc:{x:number,y:number}) {
@@ -123,7 +182,6 @@ class Canvas {
     ]
     for(let item of pointerMap){
       const { isIn,pointer } = item
-      console.log('item',item)
       if(isIn) {
         cursorPointer = pointer
         break
@@ -155,7 +213,6 @@ class Canvas {
   }
   // 绘制控制点
   drawControls() {
-    
     const shape = shapeList[pathIndex]
     const { type, x, y } = shape
     const { ctx } = this
@@ -177,7 +234,6 @@ class Canvas {
       this.drawFourPoint(four)
       this.connectFourPoint(fourPoint[0],fourPoint.slice(1))
     }
-    isDragging = true
   }
   // 绘制四个点
   drawFourPoint(list: [number,number][]) {
@@ -201,19 +257,24 @@ class Canvas {
   }
   // 找出点击的图像
   judgeIsPointInPath(x: number, y: number) {
-    if (isDragging) {
+    // 如果当前有图形被选中，判断点击的是不是当前选中的图形
+    if(this.hasPathIndex){
+      // 如果点击时候选中的还是上一次绘制的，就不需要进行后面的判断
       if(this.ctx.isPointInPath(x,y)){
-      }else{
-        isDragging = false
-        pathIndex = -1
-        pointInPathList = []
+        return 
       }
-    } else {
-      this.findPath(x, y)
-      return this.findCoverOne()
+    }
+    this.findPath(x, y)
+    this.findCoverOne()
+    // 重新绘制图形
+    this.initDraw()
+    // 如果有图形被选中，那么绘制控制框，否则就不用绘制控制框了
+    if(this.hasPathIndex){
+      this.drawControls()
     }
   }
   findPath(x: number, y: number) {
+    pointInPathList = []
     // 遍历图形列表，找出点所在的所有图形
     shapeList.forEach((ele, index) => {
       this.drawShap(ele)
@@ -230,6 +291,7 @@ class Canvas {
     } else {
       pointInPathList.sort((a, b) => b.zIndex - a.zIndex)
       pathIndex = pointInPathList[0].pathIndex as number
+      // pointInPathList[pathIndex].isDragging = true
     }
   }
   windowLocToCanvas(e: MouseEvent) {
