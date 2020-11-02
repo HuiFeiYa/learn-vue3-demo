@@ -26,11 +26,13 @@ const ctrolPoint = {
   h: 20
 }
 // 存储当前选择的控制点方向
-let cursorPointer: Direction = ''
+let cursorPointer: Direction = 'default'
 // 当前拖动点距离中心点的距离
 let mouseDown = {
   diffX:0,
-  diffY:0
+  diffY:0,
+  x:0,
+  y:0
 }
 // 是否触发 mousemove 事件，只有mousedown 后才会触发
 let canMove=false
@@ -46,7 +48,7 @@ class Canvas {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   imageData!: ImageData
-  constructor(parent = document.body, width = 500, height = 500) {
+  constructor(parent = document.body, width = 1000, height = 1000) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = width
     this.canvas.height = height
@@ -59,6 +61,10 @@ class Canvas {
   // 返回是否存在选中的图形
   get hasPathIndex() {
     return pathIndex !== -1
+  }
+  // 是否点击了四个控制点
+  get isClickCtrol() {
+    return cursorPointer !== 'default'
   }
   initDraw() {
     const { ctx, imageData } = this
@@ -101,13 +107,17 @@ class Canvas {
         const {x,y} = shapeList[pathIndex]
         const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
-        mouseDown = { diffX:loc.x - x,diffY:loc.y-y }
+        mouseDown = { diffX:loc.x - x,diffY:loc.y-y,x:loc.x,y:loc.y }
         const isInRect = this.draggingPosition(loc)
         // 当点击了矩形选择框将 canMove 标记为 true
         if(isInRect) {
           canvas.style.cursor = 'move'
         }else{
           canvas.style.cursor = cursorPointer
+           // 找到控制点的对角，记录下它的位置，保存在 acrossCornersPoint 变量中。根据这个坐标来生成鼠标移动的界限
+          this.findReferencePoint()
+          // 找到鼠标移动的边界值,保存在 boundary 变量中
+          this.findBoundary()
         }
         canMove = true
       }else{
@@ -119,16 +129,18 @@ class Canvas {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
       // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
-      if(this.hasPathIndex && canMove) {
+      if(this.hasPathIndex && canMove && !this.isClickCtrol) {
         const loc = this.windowLocToCanvas(e)
         const isInRect = this.draggingPosition(loc)
         // 移动物体
         if(isInRect) {
+          console.log('isInRect')
           this.moveShape(e)
-        }else{
-          // 缩放物体
-          this.scaleShape(e)
         }
+      }
+      if(this.hasPathIndex && this.isClickCtrol) {
+        // 缩放物体
+        this.scaleShape(e)
       }
     })
   }
@@ -137,6 +149,8 @@ class Canvas {
     window.addEventListener('mouseup',e=>{
       // 鼠标抬起后，只需要将 canMove 设置为 false ，只有当 canvas 只触发了 mousemove，在此之前未触发 mousedown 选中图形是不会跟随的。
       canMove = false
+      cursorPointer = 'default'
+      canvas.style.cursor = cursorPointer
       if(this.hasPathIndex) {
         this.drawShap(shapeList[pathIndex])
         this.drawControls()
@@ -166,10 +180,7 @@ class Canvas {
   }
   /*** 图形的缩放操作 */
   scaleShape(e: MouseEvent) {
-    // 找到控制点的对角，记录下它的位置，根据这个坐标来生成鼠标移动的界限
-    this.findReferencePoint()
-    // 找到鼠标移动的边界值
-    this.findBoundary()
+    this.update(e)
   }
   findReferencePoint() {
     // 矩形的顺序从左上逆时针旋转
@@ -178,7 +189,7 @@ class Canvas {
       [Directions.northEstern]:1,
       [Directions.southEstern]:2,
       [Directions.southWest]:3,
-      '':-1
+      'default':-1
     }
     let referencePoint
     // 找到该图形的四个点
@@ -195,6 +206,7 @@ class Canvas {
         x:acrossCorners[0],
         y:acrossCorners[1]
       }
+      console.log('acrossCornersPoint',acrossCornersPoint)
     }else{
       console.error('未找到控制点')
     }
@@ -230,10 +242,43 @@ class Canvas {
     }
     console.log('boundary',boundary)
   }
+  update(e: MouseEvent) {
+    const loc = this.windowLocToCanvas(e)
+    // 更新 shapeList 中的参数。
+    const shape = shapeList[pathIndex]
+    // 点击的位置
+    const { x:mx,y:my } = mouseDown
+    // 对角位置
+    const { x:ax,y:ay } = acrossCornersPoint
+    // 取出x轴合理的范围，y轴按比例算。
+    let x = 0
+    if('minX' in boundary) {
+      x = Math.max(boundary.minX,loc.x) 
+    }
+    if('maxX' in boundary) {
+      x = Math.min(boundary.maxX,loc.x)
+    }
+    const width = Math.abs(x - ax)
+    if(shape.type === 'rect'){
+      const curX = Math.abs(x - ax) 
+      const diffX = curX - shape.w
+
+      // 按中心点扩大，思路就是将增长平均分到原先 x,y 的两侧
+      shape.x = shape.x - diffX/2
+      shape.y = shape.y - diffX/2
+      console.log('shape',curX,shape.w,shape)
+      shape.w = curX 
+      shape.h = curX 
+    }else if(shape.type === 'circle') {
+      shape.r = Math.abs(x - ax) / 2
+    }
+    this.initDraw()
+    this.drawControls()
+  }
   resetConfig() {
     pathIndex = -1
     pointInPathList = []
-    cursorPointer = ''
+    cursorPointer = 'default'
   }
   // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
   draggingPosition(loc: {x: number;y: number}) {

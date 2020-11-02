@@ -22,6 +22,6 @@ export enum Directions {
   southWest='sw-resize'
 }
 export type Shape = RectShape | CircleShape
-export type Direction = Directions.northWestern | Directions.northEstern | Directions.southEstern| Directions.southWest | ''
+export type Direction = Directions.northWestern | Directions.northEstern | Directions.southEstern| Directions.southWest | 'default'
 
 export type Boundary = { minX: number; minY: number } | { minX: number; maxY: number } | { maxX: number; minY: number } | { maxX: number; maxY: number }
