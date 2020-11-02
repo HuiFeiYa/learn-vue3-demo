@@ -1,4 +1,4 @@
-import { Shape, RectShape, CircleShape,Direction,Directions } from './scaleConfig'
+import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from './scaleConfig'
 const shapeList: Shape[] = [
   {
     type: 'rect',
@@ -34,6 +34,14 @@ let mouseDown = {
 }
 // 是否触发 mousemove 事件，只有mousedown 后才会触发
 let canMove=false
+// 对角的坐标
+let acrossCornersPoint = {
+  x:0,y:0
+}
+let boundary: Boundary = {
+  minX:0,
+  minY:0
+}
 class Canvas {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
@@ -98,10 +106,10 @@ class Canvas {
         // 当点击了矩形选择框将 canMove 标记为 true
         if(isInRect) {
           canvas.style.cursor = 'move'
-          canMove = true
         }else{
           canvas.style.cursor = cursorPointer
         }
+        canMove = true
       }else{
         canvas.style.cursor = 'default'
       }
@@ -156,12 +164,76 @@ class Canvas {
       this.drawControls()
     }
   }
+  /*** 图形的缩放操作 */
   scaleShape(e: MouseEvent) {
-    console.log('2')
+    // 找到控制点的对角，记录下它的位置，根据这个坐标来生成鼠标移动的界限
+    this.findReferencePoint()
+    // 找到鼠标移动的边界值
+    this.findBoundary()
+  }
+  findReferencePoint() {
+    // 矩形的顺序从左上逆时针旋转
+    const indexMap = {
+      [Directions.northWestern]:0,
+      [Directions.northEstern]:1,
+      [Directions.southEstern]:2,
+      [Directions.southWest]:3,
+      '':-1
+    }
+    let referencePoint
+    // 找到该图形的四个点
+    const fourPoint = this.getFourPointPos(shapeList[pathIndex])
+    // 找到当前点击的控制点，参照点是这个点的对角
+    const index = indexMap[cursorPointer]
+    
+    if(index !== -1){
+      referencePoint = fourPoint[index]
+      // 对角的坐标，由于是四边形所以相隔两个位置
+      const acrossCornersIndex = (index + 2) % 4
+      const acrossCorners = fourPoint[acrossCornersIndex]
+      acrossCornersPoint = {
+        x:acrossCorners[0],
+        y:acrossCorners[1]
+      }
+    }else{
+      console.error('未找到控制点')
+    }
+  }
+  findBoundary() {
+    // 判断当前角属于哪个角
+    switch (cursorPointer) {
+      // 如果当前控制点是西北角，那么对角的坐标就是 maxX 和 maxY
+      case Directions.northWestern:
+        boundary = {
+          maxX:acrossCornersPoint.x,
+          maxY:acrossCornersPoint.y
+        }
+        break;
+      case Directions.northEstern:
+        boundary = {
+          minX:acrossCornersPoint.x,
+          maxY:acrossCornersPoint.y
+        }
+        break;
+      case Directions.southEstern:
+        boundary = {
+          minX:acrossCornersPoint.x,
+          minY:acrossCornersPoint.y
+        }
+        break;
+      case Directions.southWest:
+        boundary = {
+          maxX:acrossCornersPoint.x,
+          minY:acrossCornersPoint.y
+        }
+        break;
+    }
+    console.log('boundary',boundary)
   }
   resetConfig() {
     pathIndex = -1
     pointInPathList = []
+    cursorPointer = ''
   }
   // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
   draggingPosition(loc: {x: number;y: number}) {
@@ -300,7 +372,7 @@ class Canvas {
   }
   findCoverOne() {
     if (pointInPathList.length === 0) {
-      pathIndex = -1
+      this.resetConfig()
     } else {
       pointInPathList.sort((a, b) => b.zIndex - a.zIndex)
       pathIndex = pointInPathList[0].pathIndex as number
