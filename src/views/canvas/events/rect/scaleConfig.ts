@@ -15,5 +15,11 @@ export interface CircleShape extends CommonShape {
   type: 'circle';
   r: number;
 }
-
+export enum Directions {
+  northWestern='nw-resize',
+  northEstern='ne-resize',
+  southEstern='se-resize',
+  southWest='sw-resize'
+}
 export type Shape = RectShape | CircleShape
+export type Direction = Directions.northWestern | Directions.northEstern | Directions.southEstern| Directions.southWest | ''

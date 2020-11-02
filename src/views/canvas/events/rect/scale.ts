@@ -1,4 +1,4 @@
-import { Shape, RectShape, CircleShape } from './scaleConfig'
+import { Shape, RectShape, CircleShape,Direction,Directions } from './scaleConfig'
 const shapeList: Shape[] = [
   {
     type: 'rect',
@@ -25,8 +25,8 @@ const ctrolPoint = {
   w: 20,
   h: 20
 }
-let isDragging = false
-let cursorPointer = ''
+// 存储当前选择的控制点方向
+let cursorPointer: Direction = ''
 // 当前拖动点距离中心点的距离
 let mouseDown = {
   diffX:0,
@@ -70,11 +70,12 @@ class Canvas {
     this.mouseMove()
     this.mouseUp()
   }
+  /****   事件添加       */
   mouseDown() {
     const canvas = this.canvas
     canvas.addEventListener('mousedown',e=>{
       // 将之前选中图形的序号保留
-      let oldIndex = pathIndex
+      const oldIndex = pathIndex
       const { x, y } = this.windowLocToCanvas(e)
       // 重新判断当前选中的图形
       this.judgeIsPointInPath(x, y)
@@ -90,7 +91,7 @@ class Canvas {
        */
       if(this.hasPathIndex) {
         const {x,y} = shapeList[pathIndex]
-        let loc = this.windowLocToCanvas(e)
+        const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
         mouseDown = { diffX:loc.x - x,diffY:loc.y-y }
         const isInRect = this.draggingPosition(loc)
@@ -109,29 +110,16 @@ class Canvas {
   mouseMove() {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
+      // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
       if(this.hasPathIndex && canMove) {
         const loc = this.windowLocToCanvas(e)
         const isInRect = this.draggingPosition(loc)
-        // move
+        // 移动物体
         if(isInRect) {
-          const {x,y} = this.windowLocToCanvas(e)
-          const { diffX,diffY } = mouseDown
-          const shape = shapeList[pathIndex]
-          console.log('diffy',y,y - diffY,y)
-          console.log('diffx',x,x - diffX,x)
-          if(shape.type === 'rect'){
-            const { w,h } = shape
-            shape.x = x - diffX
-            shape.y = y - diffY
-          }else if(shape.type === 'circle'){
-            shapeList[pathIndex].x = x - diffX 
-            shapeList[pathIndex].y = y - diffY
-          }
-          this.initDraw()
-          // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
-          // onmouseup 中同理
-          this.drawShap(shapeList[pathIndex])
-          this.drawControls()
+          this.moveShape(e)
+        }else{
+          // 缩放物体
+          this.scaleShape(e)
         }
       }
     })
@@ -141,17 +129,42 @@ class Canvas {
     window.addEventListener('mouseup',e=>{
       // 鼠标抬起后，只需要将 canMove 设置为 false ，只有当 canvas 只触发了 mousemove，在此之前未触发 mousedown 选中图形是不会跟随的。
       canMove = false
+      if(this.hasPathIndex) {
+        this.drawShap(shapeList[pathIndex])
+        this.drawControls()
+      }
+    })
+  }
+  moveShape(e: MouseEvent) {
+    const {x,y} = this.windowLocToCanvas(e)
+    const { diffX,diffY } = mouseDown
+    const shape = shapeList[pathIndex]
+    if(shape.type === 'rect'){
+      const { w,h } = shape
+      shape.x = x - diffX
+      shape.y = y - diffY
+    }else if(shape.type === 'circle'){
+      shapeList[pathIndex].x = x - diffX 
+      shapeList[pathIndex].y = y - diffY
+    }
+    this.initDraw()
+    // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
+    // onmouseup 中同理 
+    
+    if(this.hasPathIndex) {
       this.drawShap(shapeList[pathIndex])
       this.drawControls()
-    })
+    }
+  }
+  scaleShape(e: MouseEvent) {
+    console.log('2')
   }
   resetConfig() {
     pathIndex = -1
-    isDragging = false
     pointInPathList = []
   }
   // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
-  draggingPosition(loc:{x:number,y:number}) {
+  draggingPosition(loc: {x: number;y: number}) {
     const { x,y } = loc
     const shape = shapeList[pathIndex]
     const fourPoint = this.getFourPointPos(shape)
@@ -162,25 +175,25 @@ class Canvas {
     const isInRectLeftBottom = x> fourPoint[3][0] && y< fourPoint[3][1]
     const { w,h } = ctrolPoint
     // 判断当前点击点是否在四个控制点中
-    const pointerMap = [
+    const pointerMap: {isIn: boolean;pointer: Direction}[]= [
       {
         isIn:x < fourPoint[0][0] && y<(fourPoint[0][1]+h/2) || y<fourPoint[0][1] && x< (fourPoint[0][0] + w/2)   ,
-        pointer:'nw-resize'
+        pointer:Directions.northWestern
       },
       {
         isIn:x > fourPoint[1][0] && y<(fourPoint[1][1]+h/2) || y<fourPoint[1][1] && x > (fourPoint[1][0] - w/2),
-        pointer:'ne-resize'
+        pointer:Directions.northEstern
       },
       {
         isIn:x > fourPoint[2][0] && y>(fourPoint[2][1]-h/2) || y>fourPoint[2][1] && x> (fourPoint[2][0] - w/2),
-        pointer:'se-resize'
+        pointer:Directions.southEstern
       },
       {
         isIn:x < fourPoint[3][0] && y>(fourPoint[3][1]-h/2) || y>fourPoint[3][1] && x< (fourPoint[0][0] + w/2),
-        pointer:'sw-resize'
+        pointer:Directions.southWest
       }
     ]
-    for(let item of pointerMap){
+    for(const item of pointerMap){
       const { isIn,pointer } = item
       if(isIn) {
         cursorPointer = pointer
@@ -190,7 +203,7 @@ class Canvas {
     return isInRectLeftTop && isInRectRightTop && isInRectRightBottom && isInRectLeftBottom
   }
   // 获取绘制控制框的四个点,返回的点是从 左上角->右上角逆时针旋转的。
-  getFourPointPos(shape:Shape):[number,number][]{
+  getFourPointPos(shape: Shape): [number,number][]{
     const { type, x, y } = shape
     if(shape.type === 'rect'){
       const { w,h } = shape
@@ -291,7 +304,6 @@ class Canvas {
     } else {
       pointInPathList.sort((a, b) => b.zIndex - a.zIndex)
       pathIndex = pointInPathList[0].pathIndex as number
-      // pointInPathList[pathIndex].isDragging = true
     }
   }
   windowLocToCanvas(e: MouseEvent) {
