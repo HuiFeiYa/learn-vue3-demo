@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    img.src = './img/foot1.png'
+    const pos= {
+      x:150,
+      y:50
+    }
+    const photo = {
+      w:80,
+      h:110
+    }
+    ctx.beginPath()
+    ctx.fillStyle = 'red'
+    ctx.arc(pos.x,pos.y,3,0,Math.PI*2)
+    ctx.fill()
+    /*** 未经过 translate 设置过旋转中心 */
+    // img.onload = function() {
+    //   ctx.rotate(Math.PI * 45 / 180)
+    //   ctx.drawImage(this,150,50,80,110)
+    // }
+
+    img.onload = function() {
+      ctx.save()
+      ctx.translate(pos.x+photo.w/2,pos.y+photo.h/2)
+      ctx.rotate(Math.PI * 45 / 180)
+      ctx.drawImage(this,-photo.w/2,-photo.h/2,photo.w,photo.h)
+      ctx.restore()
+    }
+    setTimeout(() => {
+      
+      ctx.beginPath()
+      ctx.fillStyle = 'red'
+      ctx.arc(pos.x + photo.w/2,pos.y+photo.h/2,3,0,Math.PI*2)
+      ctx.fill()
+    }, 200);
+  </script>
+</body>
+</html>
