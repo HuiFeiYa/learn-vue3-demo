@@ -12,38 +12,141 @@
     const ctx = canvas.getContext('2d')
     const img = new Image()
     img.src = './img/foot1.png'
+    let isDragging = false
+    let isRotate = true
+    let diffArc = ''
     const pos= {
       x:150,
-      y:50
+      y:50,
+      centerX:190,
+      centerY:105
+    }
+    const rotateCtr = {
+      w:20,
+      h:20,
+      diffY:50
     }
     const photo = {
       w:80,
       h:110
     }
+    let initDeg = ''
     ctx.beginPath()
     ctx.fillStyle = 'red'
     ctx.arc(pos.x,pos.y,3,0,Math.PI*2)
     ctx.fill()
     /*** 未经过 translate 设置过旋转中心 */
-    // img.onload = function() {
-    //   ctx.rotate(Math.PI * 45 / 180)
-    //   ctx.drawImage(this,150,50,80,110)
-    // }
-
     img.onload = function() {
+      initDraw()
+    }
+    function initDraw() {
+      const {x,y} = pos
+      const { w,h } = photo
+      console.log('isRotate',isRotate)
+      if(isRotate) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.translate(x+w/2,y+h/2)
+        ctx.rotate(diffArc)
+        ctx.drawImage(img,-w/2,-h/2,w,h)
+        ctx.restore()
+      }else{
+        ctx.beginPath()
+        ctx.drawImage(img,x,y,w,h)
+        drawControl()
+      }
+    }
+    function windowLocToCanvas(e){
+      const { top,left } = canvas.getBoundingClientRect()
+      const { clientX,clientY } = e
+      return {
+        x:clientX - left,
+        y:clientY - top
+      }
+    }
+    function drawControl() {
+      const { w,h } = photo
+      const {x,y} = pos
+      const { w:rw,h:rh } =  rotateCtr
+      // (x,y) (x+w,y) (x+w,y+h) (x,y+h)
+      // 绘制框
+      ctx.beginPath()
+      ctx.moveTo(x,y)
+      ctx.lineTo(x+w,y)
+      ctx.lineTo(x+w,y+h)
+      ctx.lineTo(x,y+h)
+      ctx.closePath()
+      ctx.strokeStyle = 'blue'
+      // 绘制四个控制点
+      // ctx.moveTo(x-rw/2,y-rh/2)
+      ctx.rect(x-rw/2,y-rh/2,rw,rh)
+      ctx.rect(x+w-rw/2,y-rh/2,rw,rh)
+      ctx.rect(x+w-rw/2,y+h-rh/2,rw,rh)
+      ctx.rect(x-rw/2,y+h-rh/2,rw,rh)
+      ctx.rect(x-rw/2+w/2, y-40,rw,rh)
+      // 绘制rotate控制点和矩形的连线
+      ctx.moveTo(x+w/2,y-40+rh/2)
+      ctx.lineTo(x+w/2,y)
+      ctx.stroke()
+    }
+    // img.onload = function() {
+    //   ctx.save()
+    //   ctx.translate(pos.x+photo.w/2,pos.y+photo.h/2)
+    //   ctx.rotate(Math.PI * 45 / 180)
+    //   ctx.drawImage(this,-photo.w/2,-photo.h/2,photo.w,photo.h)
+    //   ctx.restore()
+    // }
+    // setTimeout(() => {
+      
+    //   ctx.beginPath()
+    //   ctx.fillStyle = 'red'
+    //   ctx.arc(pos.x + photo.w/2,pos.y+photo.h/2,3,0,Math.PI*2)
+    //   ctx.fill()
+    // }, 200);
+    function diffDeg(e) {
+      const {x,y} = windowLocToCanvas(e)
+      const {x:px,y:py,centerX,centerY} = pos
+      const arc = Math.atan2(y-centerY,x-centerX)
+      return arc
+    }
+    canvas.addEventListener('mousedown',function(e){
+      isDragging = true
+      isRotate = true
+      const arc = diffDeg(e)
+      initDeg = arc
+      const deg = arc * 180 / Math.PI
+    })
+    canvas.addEventListener('mousemove',function(e){
+      if(isDragging) {
+        const {x,y} = windowLocToCanvas(e)
+        const arc = diffDeg(e)
+        diffArc = arc - initDeg
+        // rotateDraw(diffArc)
+        initDraw()
+        
+        
+        // if(arc > initDeg) {
+        //   const deg = (arc - initDeg) * 180 / Math.PI
+        //   console.log('顺时针旋转')
+        // }else{
+        //   console.log('逆时针旋转')
+        // }
+      }
+    })
+    function rotateDraw(diffArc) {
+      const {x,y} = pos
+      const { w,h } = photo
       ctx.save()
-      ctx.translate(pos.x+photo.w/2,pos.y+photo.h/2)
-      ctx.rotate(Math.PI * 45 / 180)
-      ctx.drawImage(this,-photo.w/2,-photo.h/2,photo.w,photo.h)
+      ctx.beginPath()
+      ctx.translate(x+w/2,y+h/2)
+      ctx.rotate(diffArc)
+      ctx.drawImage(img,-w/2,-h/2,w,h)
       ctx.restore()
     }
-    setTimeout(() => {
-      
-      ctx.beginPath()
-      ctx.fillStyle = 'red'
-      ctx.arc(pos.x + photo.w/2,pos.y+photo.h/2,3,0,Math.PI*2)
-      ctx.fill()
-    }, 200);
+    canvas.addEventListener('mouseup',function(e) {
+      isDragging = false
+      // isRotate = false
+    })
   </script>
 </body>
 </html>
