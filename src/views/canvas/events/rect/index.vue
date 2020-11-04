@@ -2,7 +2,7 @@
   <div></div>
 </template>
 <script lang="ts">
-import './scale.ts'
+import './board/version-1.1'
 // import './testEnum'
 export default {}
 </script>

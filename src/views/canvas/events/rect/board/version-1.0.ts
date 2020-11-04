@@ -1,4 +1,4 @@
-import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from './scaleConfig'
+import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from '../scaleConfig'
 const shapeList: Shape[] = [
   {
     type: 'rect',
@@ -151,31 +151,34 @@ class Canvas {
       canMove = false
       cursorPointer = 'default'
       canvas.style.cursor = cursorPointer
-      if(this.hasPathIndex) {
-        this.drawShap(shapeList[pathIndex])
-        this.drawControls()
-      }
+      // 将公共逻辑抽离出来后可以多处使用
+      this.drawSelectInTheEnd()
     })
   }
   moveShape(e: MouseEvent) {
+    // 函数功能单一原则，将函数中做的三件事情分别抽离了三个函数
+    this.calcXYPosition(e)
+    this.initDraw()
+    this.drawSelectInTheEnd()
+  }
+  drawSelectInTheEnd() {
+      // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
+    // onmouseup 中同理 
+    if(this.hasPathIndex) {
+      this.drawShap(shapeList[pathIndex])
+      this.drawControls()
+    }
+  }
+  calcXYPosition(e: MouseEvent) {
     const {x,y} = this.windowLocToCanvas(e)
     const { diffX,diffY } = mouseDown
     const shape = shapeList[pathIndex]
     if(shape.type === 'rect'){
-      const { w,h } = shape
       shape.x = x - diffX
       shape.y = y - diffY
     }else if(shape.type === 'circle'){
-      shapeList[pathIndex].x = x - diffX 
-      shapeList[pathIndex].y = y - diffY
-    }
-    this.initDraw()
-    // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
-    // onmouseup 中同理 
-    
-    if(this.hasPathIndex) {
-      this.drawShap(shapeList[pathIndex])
-      this.drawControls()
+      shape.x = x - diffX 
+      shape.y = y - diffY
     }
   }
   /*** 图形的缩放操作 */
