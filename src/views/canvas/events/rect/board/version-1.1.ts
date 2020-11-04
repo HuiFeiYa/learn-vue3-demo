@@ -1,5 +1,5 @@
-import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from './scaleConfig'
-import { State } from './utils'
+import { Shape, RectShape, CircleShape,Direction,Directions } from './scaleConfig'
+import { State,Circle,Rect } from './utils'
 
 const shapeList: Shape[] = [
   {
@@ -23,29 +23,7 @@ const shapeList: Shape[] = [
 ]
 const state = new State(shapeList)
 let pointInPathList: Shape[] = []
-const ctrolPoint = {
-  w: 20,
-  h: 20
-}
-// 存储当前选择的控制点方向
-let cursorPointer: Direction = 'default'
-// 当前拖动点距离中心点的距离
-let mouseDown = {
-  diffX:0,
-  diffY:0,
-  x:0,
-  y:0
-}
-// 是否触发 mousemove 事件，只有mousedown 后才会触发
-let canMove=false
-// 对角的坐标
-let acrossCornersPoint = {
-  x:0,y:0
-}
-let boundary: Boundary = {
-  minX:0,
-  minY:0
-}
+
 class Canvas {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
@@ -63,10 +41,6 @@ class Canvas {
   // 返回是否存在选中的图形
   get hasPathIndex() {
     return state.index !== -1
-  }
-  // 是否点击了四个控制点
-  get isClickCtrol() {
-    return cursorPointer !== 'default'
   }
   initDraw() {
     const { ctx, imageData } = this
@@ -109,19 +83,19 @@ class Canvas {
         const {x,y} = shapeList[state.index]
         const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
-        mouseDown = { diffX:loc.x - x,diffY:loc.y-y,x:loc.x,y:loc.y }
+        state.updateMouseDown({ diffX:loc.x - x,diffY:loc.y-y,x:loc.x,y:loc.y })
         const isInRect = this.draggingPosition(loc)
         // 当点击了矩形选择框将 canMove 标记为 true
         if(isInRect) {
           canvas.style.cursor = 'move'
         }else{
-          canvas.style.cursor = cursorPointer
+          canvas.style.cursor = state.cursorPointer
            // 找到控制点的对角，记录下它的位置，保存在 acrossCornersPoint 变量中。根据这个坐标来生成鼠标移动的界限
           this.findReferencePoint()
           // 找到鼠标移动的边界值,保存在 boundary 变量中
-          this.findBoundary()
+          state.getBoundary()
         }
-        canMove = true
+        state.updateMoveStatus(true)
       }else{
         canvas.style.cursor = 'default'
       }
@@ -131,7 +105,7 @@ class Canvas {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
       // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
-      if(this.hasPathIndex && canMove && !this.isClickCtrol) {
+      if(this.hasPathIndex && state.canMove && !state.isControlSize) {
         const loc = this.windowLocToCanvas(e)
         const isInRect = this.draggingPosition(loc)
         // 移动物体
@@ -140,7 +114,7 @@ class Canvas {
           this.moveShape(e)
         }
       }
-      if(this.hasPathIndex && this.isClickCtrol) {
+      if(this.hasPathIndex && state.isControlSize) {
         // 缩放物体
         this.scaleShape(e)
       }
@@ -150,9 +124,9 @@ class Canvas {
     const canvas = this.canvas
     window.addEventListener('mouseup',e=>{
       // 鼠标抬起后，只需要将 canMove 设置为 false ，只有当 canvas 只触发了 mousemove，在此之前未触发 mousedown 选中图形是不会跟随的。
-      canMove = false
-      cursorPointer = 'default'
-      canvas.style.cursor = cursorPointer
+      state.updateMoveStatus(false)
+      state.updateCursorPointer('default')
+      canvas.style.cursor = state.cursorPointer
       // 将公共逻辑抽离出来后可以多处使用
       this.drawSelectInTheEnd()
     })
@@ -173,7 +147,7 @@ class Canvas {
   }
   calcXYPosition(e: MouseEvent) {
     const {x,y} = this.windowLocToCanvas(e)
-    const { diffX,diffY } = mouseDown
+    const { diffX,diffY } = state.mouseDown
     const shape = shapeList[state.index]
     shape.x = x - diffX 
     shape.y = y - diffY
@@ -195,68 +169,36 @@ class Canvas {
     // 找到该图形的四个点
     const fourPoint = this.getFourPointPos(shapeList[state.index])
     // 找到当前点击的控制点，参照点是这个点的对角
-    const index = indexMap[cursorPointer]
+    const index = indexMap[state.cursorPointer]
     
     if(index !== -1){
       referencePoint = fourPoint[index]
       // 对角的坐标，由于是四边形所以相隔两个位置
       const acrossCornersIndex = (index + 2) % 4
       const acrossCorners = fourPoint[acrossCornersIndex]
-      acrossCornersPoint = {
+      state.updateAcrossCornersPoint({
         x:acrossCorners[0],
         y:acrossCorners[1]
-      }
-      console.log('acrossCornersPoint',acrossCornersPoint)
+      })
     }else{
       console.error('未找到控制点')
     }
-  }
-  findBoundary() {
-    // 判断当前角属于哪个角
-    switch (cursorPointer) {
-      // 如果当前控制点是西北角，那么对角的坐标就是 maxX 和 maxY
-      case Directions.northWestern:
-        boundary = {
-          maxX:acrossCornersPoint.x,
-          maxY:acrossCornersPoint.y
-        }
-        break;
-      case Directions.northEstern:
-        boundary = {
-          minX:acrossCornersPoint.x,
-          maxY:acrossCornersPoint.y
-        }
-        break;
-      case Directions.southEstern:
-        boundary = {
-          minX:acrossCornersPoint.x,
-          minY:acrossCornersPoint.y
-        }
-        break;
-      case Directions.southWest:
-        boundary = {
-          maxX:acrossCornersPoint.x,
-          minY:acrossCornersPoint.y
-        }
-        break;
-    }
-    console.log('boundary',boundary)
   }
   update(e: MouseEvent) {
     const loc = this.windowLocToCanvas(e)
     // 更新 shapeList 中的参数。
     const shape = shapeList[state.index]
     // 点击的位置
-    const { x:mx,y:my } = mouseDown
+    const { x:mx,y:my } = state.mouseDown
     // 对角位置
-    const { x:ax,y:ay } = acrossCornersPoint
+    const { x:ax,y:ay } = state.acrossCornersPoint
     // 取出x轴合理的范围，y轴按比例算。
     let x = 0
-    if('minX' in boundary) {
-      x = Math.max(boundary.minX,loc.x) 
+    if('minX' in state.boundary) {
+      x = Math.max(state.boundary.minX,loc.x) 
     }
-    if('maxX' in boundary) {
-      x = Math.min(boundary.maxX,loc.x)
+    if('maxX' in state.boundary) {
+      x = Math.min(state.boundary.maxX,loc.x)
     }
     const width = Math.abs(x - ax)
     if(shape.type === 'rect'){
@@ -279,7 +221,7 @@ class Canvas {
     state.select(-1)
     state.select(-1)
     pointInPathList = []
-    cursorPointer = 'default'
+    state.updateCursorPointer('default')
   }
   // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
   draggingPosition(loc: {x: number;y: number}) {
@@ -291,7 +233,7 @@ class Canvas {
     const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
     const isInRectRightBottom = x < fourPoint[2][0] && y< fourPoint[2][1]
     const isInRectLeftBottom = x> fourPoint[3][0] && y< fourPoint[3][1]
-    const { w,h } = ctrolPoint
+    const { w,h } = state.point
     // 判断当前点击点是否在四个控制点中
     const pointerMap: {isIn: boolean;pointer: Direction}[]= [
       {
@@ -314,7 +256,7 @@ class Canvas {
     for(const item of pointerMap){
       const { isIn,pointer } = item
       if(isIn) {
-        cursorPointer = pointer
+        state.updateCursorPointer(pointer)
         break
       }
     }
@@ -324,18 +266,9 @@ class Canvas {
   getFourPointPos(shape: Shape): [number,number][]{
     const { type, x, y } = shape
     if(shape.type === 'rect'){
-      const { w,h } = shape
-      return [
-        [x,y],[x+w,y],[x+w,y+h],[x,y+h]
-      ]
+      return new Rect(shape).getControlPointPos()
     }else if(shape.type === 'circle'){
-      const { r } = shape
-      return [
-        [x-r,y-r],
-        [x+r,y-r],
-        [x+r,y+r],
-        [x-r,y+r]
-      ]
+      return new Circle(shape).getControlPointPos()
     }else{
       return [
         [0,0]
@@ -347,7 +280,7 @@ class Canvas {
     const shape = shapeList[state.index]
     const { type, x, y } = shape
     const { ctx } = this
-    const { w: pw, h: ph } = ctrolPoint
+    const { w: pw, h: ph } = state.point
     const fourPoint = this.getFourPointPos(shape)
     const four = fourPoint.map((list)=>{
       // 这里需要给一个变量赋值，定义好这个变量，不然直接返回 return [1,2] ts无法识别返回值
@@ -370,7 +303,7 @@ class Canvas {
   drawFourPoint(list: [number,number][]) {
     const ctx = this.ctx
     ctx.beginPath()
-    const { w: pw, h: ph } = ctrolPoint
+    const { w: pw, h: ph } = state.point
     list.forEach(([x,y])=>{
       ctx.rect(x,y,pw,ph)
     })

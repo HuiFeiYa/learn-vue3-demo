@@ -30,3 +30,7 @@ export interface XYPosition {
   x: number;
   y: number;
 }
+export interface MouseDown extends XYPosition {
+  diffX: number;
+  diffY: number;
+}
