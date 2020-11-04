@@ -1,4 +1,6 @@
-import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from '../scaleConfig'
+import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from './scaleConfig'
+import { State } from './utils'
+
 const shapeList: Shape[] = [
   {
     type: 'rect',
@@ -19,7 +21,7 @@ const shapeList: Shape[] = [
     zIndex: 1
   }
 ]
-let pathIndex = -1
+const state = new State(shapeList)
 let pointInPathList: Shape[] = []
 const ctrolPoint = {
   w: 20,
@@ -60,7 +62,7 @@ class Canvas {
   }
   // 返回是否存在选中的图形
   get hasPathIndex() {
-    return pathIndex !== -1
+    return state.index !== -1
   }
   // 是否点击了四个控制点
   get isClickCtrol() {
@@ -89,12 +91,12 @@ class Canvas {
     const canvas = this.canvas
     canvas.addEventListener('mousedown',e=>{
       // 将之前选中图形的序号保留
-      const oldIndex = pathIndex
+      const oldIndex = state.index
       const { x, y } = this.windowLocToCanvas(e)
       // 重新判断当前选中的图形
       this.judgeIsPointInPath(x, y)
       // 选中图形，并且和之前绘制的图形不同就绘制控制框
-      if (pathIndex !== -1 && oldIndex !== pathIndex) {
+      if (state.index !== -1 && oldIndex !== state.index) {
         this.drawControls()
       }
 
@@ -104,7 +106,7 @@ class Canvas {
        * 2. 如果在四个控制点上就是缩放
        */
       if(this.hasPathIndex) {
-        const {x,y} = shapeList[pathIndex]
+        const {x,y} = shapeList[state.index]
         const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
         mouseDown = { diffX:loc.x - x,diffY:loc.y-y,x:loc.x,y:loc.y }
@@ -165,21 +167,16 @@ class Canvas {
       // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
     // onmouseup 中同理 
     if(this.hasPathIndex) {
-      this.drawShap(shapeList[pathIndex])
+      this.drawShap(shapeList[state.index])
       this.drawControls()
     }
   }
   calcXYPosition(e: MouseEvent) {
     const {x,y} = this.windowLocToCanvas(e)
     const { diffX,diffY } = mouseDown
-    const shape = shapeList[pathIndex]
-    if(shape.type === 'rect'){
-      shape.x = x - diffX
-      shape.y = y - diffY
-    }else if(shape.type === 'circle'){
-      shape.x = x - diffX 
-      shape.y = y - diffY
-    }
+    const shape = shapeList[state.index]
+    shape.x = x - diffX 
+    shape.y = y - diffY
   }
   /*** 图形的缩放操作 */
   scaleShape(e: MouseEvent) {
@@ -196,7 +193,7 @@ class Canvas {
     }
     let referencePoint
     // 找到该图形的四个点
-    const fourPoint = this.getFourPointPos(shapeList[pathIndex])
+    const fourPoint = this.getFourPointPos(shapeList[state.index])
     // 找到当前点击的控制点，参照点是这个点的对角
     const index = indexMap[cursorPointer]
     
@@ -248,7 +245,7 @@ class Canvas {
   update(e: MouseEvent) {
     const loc = this.windowLocToCanvas(e)
     // 更新 shapeList 中的参数。
-    const shape = shapeList[pathIndex]
+    const shape = shapeList[state.index]
     // 点击的位置
     const { x:mx,y:my } = mouseDown
     // 对角位置
@@ -279,14 +276,15 @@ class Canvas {
     this.drawControls()
   }
   resetConfig() {
-    pathIndex = -1
+    state.select(-1)
+    state.select(-1)
     pointInPathList = []
     cursorPointer = 'default'
   }
   // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
   draggingPosition(loc: {x: number;y: number}) {
     const { x,y } = loc
-    const shape = shapeList[pathIndex]
+    const shape = shapeList[state.index]
     const fourPoint = this.getFourPointPos(shape)
     // 这里可以通过另外一个 canvas 绘制 path来判断的是否在路径中，也可以通过数学计算判断
     const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
@@ -346,7 +344,7 @@ class Canvas {
   }
   // 绘制控制点
   drawControls() {
-    const shape = shapeList[pathIndex]
+    const shape = shapeList[state.index]
     const { type, x, y } = shape
     const { ctx } = this
     const { w: pw, h: ph } = ctrolPoint
@@ -423,7 +421,7 @@ class Canvas {
       this.resetConfig()
     } else {
       pointInPathList.sort((a, b) => b.zIndex - a.zIndex)
-      pathIndex = pointInPathList[0].pathIndex as number
+      state.select(pointInPathList[0].pathIndex as number)
     }
   }
   windowLocToCanvas(e: MouseEvent) {

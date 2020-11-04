@@ -1,4 +1,4 @@
-import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from '../scaleConfig'
+import { Shape, RectShape, CircleShape,Direction,Directions,Boundary } from './scaleConfig'
 const shapeList: Shape[] = [
   {
     type: 'rect',
