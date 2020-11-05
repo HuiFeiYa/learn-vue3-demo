@@ -1,10 +1,12 @@
 
-import { Shape,XYPosition,Direction,MouseDown,Boundary,Directions,CircleShape,RectShape } from './scaleConfig'
+import { Shape,XYPosition,Direction,MouseDown,Boundary,Directions,CircleShape,RectShape,DobuleNumber } from './scaleConfig'
 class BaseShape {
   x!: number;
   y!: number;
   fillStyle!: string;
   zIndex!: number;
+  // 控制点的大小
+  point = { w:20,h:20 }
   constructor(shape: Shape) {
     const { x,y,fillStyle,zIndex } = shape
     this.x = x 
@@ -12,7 +14,27 @@ class BaseShape {
     this.fillStyle = fillStyle
     this.zIndex = zIndex
   }
-
+  // 绘制控制点
+  drawControlsPoint(list: DobuleNumber[],ctx: CanvasRenderingContext2D) {
+    ctx.beginPath()
+    const { w,h } = this.point
+    list.forEach(([x,y])=>{
+      ctx.rect(x-w/2,y-h/2,w,h)
+    })
+  }
+  // 连接各个绘制点
+  connectCtrolPoint(list: DobuleNumber[],ctx: CanvasRenderingContext2D) {
+    const {w,h} = this.point
+    list.forEach(([x,y],index)=>{
+      if(index === 0) {
+        ctx.moveTo(x,y)
+      }
+      ctx.lineTo(x,y)
+    })
+    ctx.closePath()
+    ctx.strokeStyle = 'blue'
+    ctx.stroke()
+  }
 }
 export class Circle extends BaseShape{
   r: number
@@ -23,7 +45,7 @@ export class Circle extends BaseShape{
     this.r = r
     this.shape = shape
   }
-  getControlPointPos(): [number,number][]{
+  get controlPointPos(): DobuleNumber[]{
     const { r,x,y } = this
     return [
       [x-r,y-r],
@@ -46,6 +68,10 @@ export class Circle extends BaseShape{
     }
     this.shape.r = Math.abs(x - ax) / 2
   }
+  drawControls(ctx: CanvasRenderingContext2D) {
+    this.drawControlsPoint(this.controlPointPos,ctx)
+    this.connectCtrolPoint(this.controlPointPos,ctx)
+  }
 }
 
 export class Rect extends BaseShape {
@@ -59,7 +85,7 @@ export class Rect extends BaseShape {
     this.h = h
     this.shape = shape
   }
-  getControlPointPos(): [number,number][]{
+  get controlPointPos(): DobuleNumber[]{
     const {w,h,x,y} = this
     return [
       [x,y],[x+w,y],[x+w,y+h],[x,y+h]
@@ -84,11 +110,11 @@ export class Rect extends BaseShape {
     shape.w = width 
     shape.h = width 
   }
+  drawControls(ctx: CanvasRenderingContext2D) {
+    this.drawControlsPoint(this.controlPointPos,ctx)
+    this.connectCtrolPoint(this.controlPointPos,ctx)
+  }
 }
-// export function AdaptShape(shape:Shape) {
-//   const { type } 
-//   return 
-// }
 export class State {
   // 当前选中第几个元素
   index = -1
@@ -97,8 +123,6 @@ export class State {
   // 点击控制点的对角
   acrossCornersPoint!: XYPosition
   cursorPointer: Direction = 'default'
-  // 控制点的大小
-  point = { w:20,h:20 }
   // 是否触发 mousemove 事件，只有mousedown 后才会触发
   canMove=false
   boundary: Boundary = {

@@ -1,4 +1,4 @@
-import { Shape, RectShape, CircleShape,Direction,Directions } from './scaleConfig'
+import { Shape, RectShape, CircleShape,Direction,Directions,DobuleNumber } from './scaleConfig'
 import { State,Circle,Rect } from './utils'
 
 const shapeList: Shape[] = [
@@ -80,7 +80,7 @@ class Canvas {
       this.judgeIsPointInPath(x, y)
       // 选中图形，并且和之前绘制的图形不同就绘制控制框
       if (state.index !== -1 && oldIndex !== state.index) {
-        this.drawControls()
+        this.adaptShape.drawControls(this.ctx)
       }
 
       /**
@@ -151,7 +151,7 @@ class Canvas {
     // onmouseup 中同理 
     if(this.hasPathIndex) {
       this.drawShap(shapeList[state.index])
-      this.drawControls()
+      this.adaptShape.drawControls(this.ctx)
     }
   }
   calcXYPosition(e: MouseEvent) {
@@ -176,7 +176,7 @@ class Canvas {
     }
     let referencePoint
     // 找到该图形的四个点
-    const fourPoint = this.adaptShape.getControlPointPos()
+    const fourPoint = this.adaptShape.controlPointPos
     // 找到当前点击的控制点，参照点是这个点的对角
     const index = indexMap[state.cursorPointer]
     
@@ -215,7 +215,7 @@ class Canvas {
       rect.scale(state,loc)
     }
     this.initDraw()
-    this.drawControls()
+    this.adaptShape.drawControls(this.ctx)
   }
   resetConfig() {
     state.select(-1)
@@ -226,13 +226,13 @@ class Canvas {
   draggingPosition(loc: {x: number;y: number}) {
     const { x,y } = loc
     const shape = shapeList[state.index]
-    const fourPoint = this.adaptShape.getControlPointPos()
+    const fourPoint = this.adaptShape.controlPointPos
     // 这里可以通过另外一个 canvas 绘制 path来判断的是否在路径中，也可以通过数学计算判断
     const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
     const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
     const isInRectRightBottom = x < fourPoint[2][0] && y< fourPoint[2][1]
     const isInRectLeftBottom = x> fourPoint[3][0] && y< fourPoint[3][1]
-    const { w,h } = state.point
+    const { w,h } = {w:20,h:20}
     // 判断当前点击点是否在四个控制点中
     const pointerMap: {isIn: boolean;pointer: Direction}[]= [
       {
@@ -261,40 +261,8 @@ class Canvas {
     }
     return isInRectLeftTop && isInRectRightTop && isInRectRightBottom && isInRectLeftBottom
   }
-  
-  // 绘制控制点
-  drawControls() {
-    const shape = shapeList[state.index]
-    const { w: pw, h: ph } = state.point
-    const fourPoint = this.adaptShape.getControlPointPos()
-    const four = fourPoint.map((list)=>{
-      // 这里需要给一个变量赋值，定义好这个变量，不然直接返回 return [1,2] ts无法识别返回值
-      list = [list[0]-pw/2,list[1]-ph/2]
-      return list
-    })
-    if (shape.type === 'rect') {
-      const { w, h } = shape
-      // 矩形的四个点 (x- pw/2,y-ph/2) (x+w-pw/2,y-ph/2) (x+w-pw/2,y+h-ph/2)(x-pw/2,y+h-ph/2)]
-      this.drawFourPoint(four)
-      this.connectFourPoint(fourPoint[0],fourPoint.slice(1))
-    } else {
-      const { r } = shape
-      // (x-r,y-r) (x+r,y-r) (x+r,y+r) (x-r,y+r)
-      this.drawFourPoint(four)
-      this.connectFourPoint(fourPoint[0],fourPoint.slice(1))
-    }
-  }
-  // 绘制四个点
-  drawFourPoint(list: [number,number][]) {
-    const ctx = this.ctx
-    ctx.beginPath()
-    const { w: pw, h: ph } = state.point
-    list.forEach(([x,y])=>{
-      ctx.rect(x,y,pw,ph)
-    })
-  }
   // 连线四个点
-  connectFourPoint(start: [number,number],list: [number,number][]) {
+  connectFourPoint(start: DobuleNumber,list: DobuleNumber[]) {
     const ctx = this.ctx
     ctx.moveTo(start[0], start[1])
     list.forEach(([x,y])=>{
@@ -319,7 +287,7 @@ class Canvas {
     this.initDraw()
     // 如果有图形被选中，那么绘制控制框，否则就不用绘制控制框了
     if(this.hasPathIndex){
-      this.drawControls()
+      this.adaptShape.drawControls(this.ctx)
     }
   }
   findPath(x: number, y: number) {

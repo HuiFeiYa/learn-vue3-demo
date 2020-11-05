@@ -34,3 +34,4 @@ export interface MouseDown extends XYPosition {
   diffX: number;
   diffY: number;
 }
+export type DobuleNumber = [number,number]
