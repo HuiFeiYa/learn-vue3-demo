@@ -42,6 +42,15 @@ class Canvas {
   get hasPathIndex() {
     return state.index !== -1
   }
+  // 暴露出图形示例，每个示例上拥有的方法相同，统一输出的接口
+  get adaptShape() {
+    const shape = state.currentShape
+    if(shape.type === 'rect'){
+      return new Rect(shape)
+    }else{
+      return new Circle(shape)
+    }
+  }
   initDraw() {
     const { ctx, imageData } = this
     // 将画面首次的图形重新填充到 canvas 上，由于后面绘制会产生很多 path ，但是在重置画面的时候不像绘制这些 path
@@ -167,7 +176,7 @@ class Canvas {
     }
     let referencePoint
     // 找到该图形的四个点
-    const fourPoint = this.getFourPointPos(shapeList[state.index])
+    const fourPoint = this.adaptShape.getControlPointPos()
     // 找到当前点击的控制点，参照点是这个点的对角
     const index = indexMap[state.cursorPointer]
     
@@ -184,41 +193,31 @@ class Canvas {
       console.error('未找到控制点')
     }
   }
+  update1(e: MouseEvent) {
+    const loc = this.windowLocToCanvas(e)
+    const shape = shapeList[state.index]
+    if(shape.type === 'circle') {
+      const circle = new Circle(shape)
+      circle.scale(state,loc)
+    }else if (shape.type === 'rect') {
+      const rect = new Rect(shape)
+      rect.scale(state,loc)
+    }
+  }
   update(e: MouseEvent) {
     const loc = this.windowLocToCanvas(e)
-    // 更新 shapeList 中的参数。
     const shape = shapeList[state.index]
-    // 点击的位置
-    const { x:mx,y:my } = state.mouseDown
-    // 对角位置
-    const { x:ax,y:ay } = state.acrossCornersPoint
-    // 取出x轴合理的范围，y轴按比例算。
-    let x = 0
-    if('minX' in state.boundary) {
-      x = Math.max(state.boundary.minX,loc.x) 
-    }
-    if('maxX' in state.boundary) {
-      x = Math.min(state.boundary.maxX,loc.x)
-    }
-    const width = Math.abs(x - ax)
-    if(shape.type === 'rect'){
-      const curX = Math.abs(x - ax) 
-      const diffX = curX - shape.w
-
-      // 按中心点扩大，思路就是将增长平均分到原先 x,y 的两侧
-      shape.x = shape.x - diffX/2
-      shape.y = shape.y - diffX/2
-      console.log('shape',curX,shape.w,shape)
-      shape.w = curX 
-      shape.h = curX 
-    }else if(shape.type === 'circle') {
-      shape.r = Math.abs(x - ax) / 2
+    if(shape.type === 'circle') {
+      const circle = new Circle(shape)
+      circle.scale(state,loc)
+    }else if (shape.type === 'rect') {
+      const rect = new Rect(shape)
+      rect.scale(state,loc)
     }
     this.initDraw()
     this.drawControls()
   }
   resetConfig() {
-    state.select(-1)
     state.select(-1)
     pointInPathList = []
     state.updateCursorPointer('default')
@@ -227,7 +226,7 @@ class Canvas {
   draggingPosition(loc: {x: number;y: number}) {
     const { x,y } = loc
     const shape = shapeList[state.index]
-    const fourPoint = this.getFourPointPos(shape)
+    const fourPoint = this.adaptShape.getControlPointPos()
     // 这里可以通过另外一个 canvas 绘制 path来判断的是否在路径中，也可以通过数学计算判断
     const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
     const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
@@ -262,26 +261,12 @@ class Canvas {
     }
     return isInRectLeftTop && isInRectRightTop && isInRectRightBottom && isInRectLeftBottom
   }
-  // 获取绘制控制框的四个点,返回的点是从 左上角->右上角逆时针旋转的。
-  getFourPointPos(shape: Shape): [number,number][]{
-    const { type, x, y } = shape
-    if(shape.type === 'rect'){
-      return new Rect(shape).getControlPointPos()
-    }else if(shape.type === 'circle'){
-      return new Circle(shape).getControlPointPos()
-    }else{
-      return [
-        [0,0]
-      ]
-    }
-  }
+  
   // 绘制控制点
   drawControls() {
     const shape = shapeList[state.index]
-    const { type, x, y } = shape
-    const { ctx } = this
     const { w: pw, h: ph } = state.point
-    const fourPoint = this.getFourPointPos(shape)
+    const fourPoint = this.adaptShape.getControlPointPos()
     const four = fourPoint.map((list)=>{
       // 这里需要给一个变量赋值，定义好这个变量，不然直接返回 return [1,2] ts无法识别返回值
       list = [list[0]-pw/2,list[1]-ph/2]

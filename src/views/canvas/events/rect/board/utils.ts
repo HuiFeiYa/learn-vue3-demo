@@ -12,13 +12,16 @@ class BaseShape {
     this.fillStyle = fillStyle
     this.zIndex = zIndex
   }
+
 }
 export class Circle extends BaseShape{
   r: number
+  shape!: CircleShape
   constructor(shape: CircleShape){
     super(shape)
     const { r } = shape 
     this.r = r
+    this.shape = shape
   }
   getControlPointPos(): [number,number][]{
     const { r,x,y } = this
@@ -29,16 +32,32 @@ export class Circle extends BaseShape{
       [x-r,y+r]
     ]
   }
+  scale(state: State,loc: XYPosition) {
+    // 通过矩形的两个对角计算出这个矩形的半径 r
+    // 对角位置
+    const { x:ax } = state.acrossCornersPoint
+    // 取出x轴合理的范围，y轴按比例算。
+    let x = 0
+    if('minX' in state.boundary) {
+      x = Math.max(state.boundary.minX,loc.x) 
+    }
+    if('maxX' in state.boundary) {
+      x = Math.min(state.boundary.maxX,loc.x)
+    }
+    this.shape.r = Math.abs(x - ax) / 2
+  }
 }
 
 export class Rect extends BaseShape {
   w: number
   h: number
+  shape: RectShape
   constructor(shape: RectShape){
     super(shape)
     const { w,h } = shape
     this.w = w
     this.h = h
+    this.shape = shape
   }
   getControlPointPos(): [number,number][]{
     const {w,h,x,y} = this
@@ -46,8 +65,30 @@ export class Rect extends BaseShape {
       [x,y],[x+w,y],[x+w,y+h],[x,y+h]
     ]
   }
+  scale(state: State,loc: XYPosition) {
+    const { x:ax,y:ay } = state.acrossCornersPoint
+    const shape = this.shape
+    let x = 0
+    if('minX' in state.boundary) {
+      x = Math.max(state.boundary.minX,loc.x) 
+    }
+    if('maxX' in state.boundary) {
+      x = Math.min(state.boundary.maxX,loc.x)
+    }
+    // 当前矩形的宽度
+    const width = Math.abs(x - ax) 
+    const diffW = width - shape.w
+    // 按中心点扩大，思路就是将增长平均分到原先 x,y 的两侧
+    shape.x = shape.x - diffW/2
+    shape.y = shape.y - diffW/2
+    shape.w = width 
+    shape.h = width 
+  }
 }
-
+// export function AdaptShape(shape:Shape) {
+//   const { type } 
+//   return 
+// }
 export class State {
   // 当前选中第几个元素
   index = -1
@@ -69,6 +110,9 @@ export class State {
   }
   get isControlSize() {
     return this.cursorPointer !== 'default'
+  }
+  get currentShape() {
+    return this.shapeList[this.index]
   }
   add(shape: Shape) {
     this.shapeList.push(shape)
