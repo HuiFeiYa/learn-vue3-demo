@@ -28,6 +28,7 @@ class Canvas {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   imageData!: ImageData
+  // pointInPathList: Shape[] = []
   constructor(parent = document.body, width = 1000, height = 1000) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = width
@@ -42,8 +43,9 @@ class Canvas {
   get hasPathIndex() {
     return state.index !== -1
   }
-  // 暴露出图形示例，每个示例上拥有的方法相同，统一输出的接口
-  get adaptShape() {
+  // 暴露出选中的图形示例，每个示例上拥有的方法相同，统一输出的接口,
+  get adaptSelectedShape() {
+    // state.currentShape 只和index有关系，如果想更新选中的图形通过去更新 index 来实现
     const shape = state.currentShape
     if(shape.type === 'rect'){
       return new Rect(shape)
@@ -51,13 +53,21 @@ class Canvas {
       return new Circle(shape)
     }
   }
+
   initDraw() {
     const { ctx, imageData } = this
     // 将画面首次的图形重新填充到 canvas 上，由于后面绘制会产生很多 path ，但是在重置画面的时候不像绘制这些 path
     this.ctx.putImageData(imageData, 0, 0)
-    for (const shape of shapeList) {
-      this.drawShap(shape)
+    for (const [index,shape] of shapeList.entries()) {
+      this.adaptShapeManual(shape).drawShape(ctx)
     }
+  }
+  adaptShapeManual(shape: Shape) {
+      if(shape.type === 'rect'){
+        return new Rect(shape)
+      }else{
+        return new Circle(shape)
+      }
   }
   // 存储初始化的 canvas 图像
   getImageData() {
@@ -80,7 +90,7 @@ class Canvas {
       this.judgeIsPointInPath(x, y)
       // 选中图形，并且和之前绘制的图形不同就绘制控制框
       if (state.index !== -1 && oldIndex !== state.index) {
-        this.adaptShape.drawControls(this.ctx)
+        this.adaptSelectedShape.drawControls(this.ctx)
       }
 
       /**
@@ -119,7 +129,6 @@ class Canvas {
         const isInRect = this.draggingPosition(loc)
         // 移动物体
         if(isInRect) {
-          console.log('isInRect')
           this.moveShape(e)
         }
       }
@@ -150,8 +159,8 @@ class Canvas {
       // 由于 initDraw 绘制的时候是按 shapeList 中图形的排序来绘制的，后面绘制的层级会高于前面绘制的，显示在其上，为了让选中的显示在最上面，这里将选中的重新绘制一遍
     // onmouseup 中同理 
     if(this.hasPathIndex) {
-      this.drawShap(shapeList[state.index])
-      this.adaptShape.drawControls(this.ctx)
+      this.adaptSelectedShape.drawShape(this.ctx)
+      this.adaptSelectedShape.drawControls(this.ctx)
     }
   }
   calcXYPosition(e: MouseEvent) {
@@ -176,7 +185,7 @@ class Canvas {
     }
     let referencePoint
     // 找到该图形的四个点
-    const fourPoint = this.adaptShape.controlPointPos
+    const fourPoint = this.adaptSelectedShape.controlPointPos
     // 找到当前点击的控制点，参照点是这个点的对角
     const index = indexMap[state.cursorPointer]
     
@@ -193,17 +202,6 @@ class Canvas {
       console.error('未找到控制点')
     }
   }
-  update1(e: MouseEvent) {
-    const loc = this.windowLocToCanvas(e)
-    const shape = shapeList[state.index]
-    if(shape.type === 'circle') {
-      const circle = new Circle(shape)
-      circle.scale(state,loc)
-    }else if (shape.type === 'rect') {
-      const rect = new Rect(shape)
-      rect.scale(state,loc)
-    }
-  }
   update(e: MouseEvent) {
     const loc = this.windowLocToCanvas(e)
     const shape = shapeList[state.index]
@@ -215,7 +213,7 @@ class Canvas {
       rect.scale(state,loc)
     }
     this.initDraw()
-    this.adaptShape.drawControls(this.ctx)
+    this.adaptSelectedShape.drawControls(this.ctx)
   }
   resetConfig() {
     state.select(-1)
@@ -226,7 +224,7 @@ class Canvas {
   draggingPosition(loc: {x: number;y: number}) {
     const { x,y } = loc
     const shape = shapeList[state.index]
-    const fourPoint = this.adaptShape.controlPointPos
+    const fourPoint = this.adaptSelectedShape.controlPointPos
     // 这里可以通过另外一个 canvas 绘制 path来判断的是否在路径中，也可以通过数学计算判断
     const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
     const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
@@ -287,15 +285,17 @@ class Canvas {
     this.initDraw()
     // 如果有图形被选中，那么绘制控制框，否则就不用绘制控制框了
     if(this.hasPathIndex){
-      this.adaptShape.drawControls(this.ctx)
+      this.adaptSelectedShape.drawControls(this.ctx)
     }
   }
   findPath(x: number, y: number) {
     pointInPathList = []
     // 遍历图形列表，找出点所在的所有图形
     shapeList.forEach((ele, index) => {
-      this.drawShap(ele)
-      if (this.ctx.isPointInPath(x, y)) {
+      this.adaptShapeManual(ele).drawShape(this.ctx)
+      // 这里判断要反正外面，drawShape 把 ctx 放到 drawShape 中判断会导致状态未及时更新 ？？？不知道为啥
+      const isInPath = this.ctx.isPointInPath(x, y)
+      if (isInPath) {
         // 给图像添加上在列表位置的标记
         ele.pathIndex = index
         pointInPathList.push(ele)
@@ -317,34 +317,6 @@ class Canvas {
       x: clientX - top,
       y: clientY - left
     }
-  }
-  // 绘制图像
-  drawShap(shape: Shape) {
-    const { ctx } = this
-    const { type } = shape
-    // 在 interface 中使用了字面量定义类型，判断的时候可以借助字面量判断
-    if (shape.type === 'rect') {
-      this.drawRect(shape)
-    }
-    if (shape.type === 'circle') {
-      this.drawCircle(shape)
-    }
-  }
-  drawRect(shape: RectShape) {
-    const ctx = this!.ctx
-    const { x, y, fillStyle, w, h } = shape
-    ctx.beginPath()
-    ctx.rect(x, y, w, h)
-    ctx.fillStyle = fillStyle
-    ctx.fill()
-  }
-  drawCircle(shape: CircleShape) {
-    const { x, y, fillStyle, r } = shape
-    const { ctx } = this
-    ctx.beginPath()
-    ctx.arc(x, y, r, 0, Math.PI * 2)
-    ctx.fillStyle = fillStyle
-    ctx.fill()
   }
 }
 

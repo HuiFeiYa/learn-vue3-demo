@@ -72,6 +72,13 @@ export class Circle extends BaseShape{
     this.drawControlsPoint(this.controlPointPos,ctx)
     this.connectCtrolPoint(this.controlPointPos,ctx)
   }
+  drawShape(ctx: CanvasRenderingContext2D) {
+    const { x, y, fillStyle, r } = this.shape
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.fillStyle = fillStyle
+    ctx.fill()
+  }
 }
 
 export class Rect extends BaseShape {
@@ -114,6 +121,13 @@ export class Rect extends BaseShape {
     this.drawControlsPoint(this.controlPointPos,ctx)
     this.connectCtrolPoint(this.controlPointPos,ctx)
   }
+  drawShape(ctx: CanvasRenderingContext2D) {
+    const { x, y, fillStyle, w, h } = this.shape
+    ctx.beginPath()
+    ctx.rect(x, y, w, h)
+    ctx.fillStyle = fillStyle
+    ctx.fill()
+  }
 }
 export class State {
   // 当前选中第几个元素
@@ -142,6 +156,7 @@ export class State {
     this.shapeList.push(shape)
   }
   select(index: number){
+    console.log('index',index)
     this.index = index
   }
   updateMouseDown(pos: MouseDown){
