@@ -19,6 +19,12 @@ export interface CircleShape extends CommonShape {
   r: number;
   fillStyle: string;
 }
+export interface ImageShape extends CommonShape{
+  type: 'image';
+  src: string;
+  w: number;
+  h: number;
+}
 export enum Directions {
   northWestern='nw-resize',
   northEstern='ne-resize',

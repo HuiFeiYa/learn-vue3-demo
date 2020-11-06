@@ -1,34 +1,21 @@
-import { BaseShape } from '../rect/board/utils';
+// import { Canvas } from '../rect/board/version-1.1'
 import { Shape } from '../rect/board/scaleConfig'
-class Canvas {
-  canvas: HTMLCanvasElement
-  ctx: CanvasRenderingContext2D
-  constructor(width=500,height=500,parent=document.body){
-    this.canvas = document.createElement('canvas')
-    this.canvas.width = width
-    this.canvas.height = height
-    parent.appendChild(this.canvas)
-    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
+import { State } from '../rect/board/utils'
+const shapeList: Shape[] = [
+  {
+    type: 'rect',
+    x: 50,
+    y: 50,
+    w: 100,
+    h: 100,
+    fillStyle: 'green',
+    // 表示当前图形的层级，用于重叠时候判断哪个在上面
+    zIndex: 0
   }
+]
+const state = new State(shapeList)
 
-}
-new Canvas()
 
-class Img extends BaseShape{
-  constructor(shape: Shape){
-    super(shape)
-  }
-}
+const instance = new Canvas()
 
-const img: Shape= {
-  x:150,
-  y:50,
-  centerX:190,
-  centerY:105,
-  w:80,
-  h:110,
-  zIndex:0,
-  type:'rect',
-  fillStyle:'none'
-}
-new Img(img)
+instance.initDraw()

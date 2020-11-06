@@ -146,6 +146,7 @@ export class State {
     minX:0,
     minY:0
   }
+  pointerInPathList: Shape[] = []
   constructor(shapeList: Shape[]){
     this.shapeList = shapeList
   }
@@ -161,6 +162,12 @@ export class State {
   select(index: number){
     console.log('index',index)
     this.index = index
+  }
+  resetPointerInPathList() {
+    this.pointerInPathList = []
+  }
+  pushPointerInPathList(ele: Shape){
+    this.pointerInPathList.push(ele)
   }
   // 判断点击落在哪个控制点上，找到对应的 cursor
   judegeDraggingPosition(loc: XYPosition,ele: Rect | Circle){
