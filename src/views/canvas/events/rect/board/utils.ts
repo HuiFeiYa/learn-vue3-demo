@@ -4,6 +4,7 @@ export class BaseShape {
   x!: number;
   y!: number;
   zIndex?: number;
+  rotateY= 80
   // 控制点的大小
   point = { w:20,h:20 }
   constructor(shape: Shape) {
@@ -33,6 +34,15 @@ export class BaseShape {
     ctx.strokeStyle = 'blue'
     ctx.stroke()
   }
+  rotateControlStart(pos: DobuleNumber) {
+    const [cx,cy] = pos
+    const { w,h } = this.point
+    return [cx-w/2,cy-h/2-this.rotateY]
+  }
+  rotateControlCenter(pos: DobuleNumber) {
+    const [cx,cy] = pos
+    return [cx,cy - this.rotateY]
+  }
 }
 export class Circle extends BaseShape{
   r: number
@@ -55,6 +65,10 @@ export class Circle extends BaseShape{
       [x-r,y+r]
     ]
   }
+  get centerPosition() {
+    const {x,y} = this
+    return [x,y]
+  }
   scale(state: State,loc: XYPosition) {
     // 通过矩形的两个对角计算出这个矩形的半径 r
     // 对角位置
@@ -72,6 +86,24 @@ export class Circle extends BaseShape{
   drawControls(ctx: CanvasRenderingContext2D) {
     this.drawControlsPoint(this.controlPointPos,ctx)
     this.connectCtrolPoint(this.controlPointPos,ctx)
+    this.drawRotateControl(ctx)
+    this.connectRotateControl(ctx)
+  }
+  drawRotateControl(ctx: CanvasRenderingContext2D) {
+    const [cx,cy] = this.centerPosition
+    const rotatePos: DobuleNumber = [cx,cy-this.r]
+    const [x,y] = this.rotateControlStart(rotatePos)
+    const {w,h} = this.point
+    // 绘制旋转控制点
+    ctx.rect(x,y,w,h) 
+  }
+  connectRotateControl(ctx: CanvasRenderingContext2D) {
+    const [cx,cy] = this.centerPosition
+    const rotatePos: DobuleNumber = [cx,cy-this.r]
+    const [x,y] = this.rotateControlCenter(rotatePos)
+    ctx.moveTo(x,y)
+    ctx.lineTo(x,y+this.rotateY)
+    ctx.stroke()
   }
   drawShape(ctx: CanvasRenderingContext2D) {
     const { x, y, fillStyle, r } = this.shape
@@ -101,6 +133,10 @@ export class Rect extends BaseShape {
       [x,y],[x+w,y],[x+w,y+h],[x,y+h]
     ]
   }
+  get centerPosition(): DobuleNumber{
+    const { x,y,w,h } = this
+    return [(x*2 +w)/2,(y*2+h)/ 2]
+  }
   scale(state: State,loc: XYPosition) {
     const { x:ax,y:ay } = state.acrossCornersPoint
     const shape = this.shape
@@ -123,6 +159,8 @@ export class Rect extends BaseShape {
   drawControls(ctx: CanvasRenderingContext2D) {
     this.drawControlsPoint(this.controlPointPos,ctx)
     this.connectCtrolPoint(this.controlPointPos,ctx)
+    this.drawRotateControl(ctx)
+    this.connectRotateControl(ctx)
   }
   drawShape(ctx: CanvasRenderingContext2D) {
     const { x, y, fillStyle, w, h } = this.shape
@@ -130,6 +168,22 @@ export class Rect extends BaseShape {
     ctx.rect(x, y, w, h)
     ctx.fillStyle = fillStyle
     ctx.fill()
+  }
+  drawRotateControl(ctx: CanvasRenderingContext2D) {
+    const [cx,cy] = this.centerPosition
+    const rotatePos: DobuleNumber = [cx,cy-this.h/2]
+    const [x,y] = this.rotateControlStart(rotatePos)
+    const {w,h} = this.point
+    // 绘制旋转控制点
+    ctx.rect(x,y,w,h) 
+  }
+  connectRotateControl(ctx: CanvasRenderingContext2D) {
+    const [cx,cy] = this.centerPosition
+    const rotatePos: DobuleNumber = [cx,cy-this.h/2]
+    const [x,y] = this.rotateControlCenter(rotatePos)
+    ctx.moveTo(x,y)
+    ctx.lineTo(x,y+this.rotateY)
+    ctx.stroke()
   }
 }
 export class State {
