@@ -53,6 +53,14 @@ class Canvas {
       return new Circle(shape)
     }
   }
+  // 手动传入 shape ，用于没有图形被选中的情况
+  adaptShapeManual(shape: Shape) {
+    if(shape.type === 'rect'){
+      return new Rect(shape)
+    }else{
+      return new Circle(shape)
+    }
+  }
 
   initDraw() {
     const { ctx, imageData } = this
@@ -61,13 +69,6 @@ class Canvas {
     for (const [index,shape] of shapeList.entries()) {
       this.adaptShapeManual(shape).drawShape(ctx)
     }
-  }
-  adaptShapeManual(shape: Shape) {
-      if(shape.type === 'rect'){
-        return new Rect(shape)
-      }else{
-        return new Circle(shape)
-      }
   }
   // 存储初始化的 canvas 图像
   getImageData() {
@@ -83,15 +84,9 @@ class Canvas {
   mouseDown() {
     const canvas = this.canvas
     canvas.addEventListener('mousedown',e=>{
-      // 将之前选中图形的序号保留
-      const oldIndex = state.index
-      const { x, y } = this.windowLocToCanvas(e)
-      // 重新判断当前选中的图形
-      this.judgeIsPointInPath(x, y)
-      // 选中图形，并且和之前绘制的图形不同就绘制控制框
-      if (state.index !== -1 && oldIndex !== state.index) {
-        this.adaptSelectedShape.drawControls(this.ctx)
-      }
+      // 查找选中的图形路径
+      const hasFindShape = this.preJudgeHandle(e)
+      if(hasFindShape)return 
 
       /**
        * 在拖拽状态下通过鼠标位置来判断是拖动还是缩放
@@ -99,11 +94,10 @@ class Canvas {
        * 2. 如果在四个控制点上就是缩放
        */
       if(this.hasPathIndex) {
-        const {x,y} = shapeList[state.index]
         const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
-        state.updateMouseDown({ diffX:loc.x - x,diffY:loc.y-y,x:loc.x,y:loc.y })
-        const isInRect = this.draggingPosition(loc)
+        state.updateMouseDown(loc)
+        const isInRect = state.judegeDraggingPosition(loc,this.adaptSelectedShape)
         // 当点击了矩形选择框将 canMove 标记为 true
         if(isInRect) {
           canvas.style.cursor = 'move'
@@ -120,13 +114,25 @@ class Canvas {
       }
     })
   }
+  preJudgeHandle(e: MouseEvent) {
+    // 将之前选中图形的序号保留
+    const oldIndex = state.index
+    const { x, y } = this.windowLocToCanvas(e)
+    // 重新判断当前选中的图形
+    this.judgeIsPointInPath(x, y)
+    // 选中图形，并且和之前绘制的图形不同就绘制控制框
+    if (state.index !== -1 && oldIndex !== state.index) {
+      this.adaptSelectedShape.drawControls(this.ctx)
+      return true
+    }
+  }
   mouseMove() {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
       // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
       if(this.hasPathIndex && state.canMove && !state.isControlSize) {
         const loc = this.windowLocToCanvas(e)
-        const isInRect = this.draggingPosition(loc)
+        const isInRect = state.judegeDraggingPosition(loc,this.adaptSelectedShape)
         // 移动物体
         if(isInRect) {
           this.moveShape(e)
@@ -219,45 +225,6 @@ class Canvas {
     state.select(-1)
     pointInPathList = []
     state.updateCursorPointer('default')
-  }
-  // 判断鼠标落在四个控制点上还是，矩形上,只支持按比例缩放，这样能保证图形不变。
-  draggingPosition(loc: {x: number;y: number}) {
-    const { x,y } = loc
-    const shape = shapeList[state.index]
-    const fourPoint = this.adaptSelectedShape.controlPointPos
-    // 这里可以通过另外一个 canvas 绘制 path来判断的是否在路径中，也可以通过数学计算判断
-    const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
-    const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
-    const isInRectRightBottom = x < fourPoint[2][0] && y< fourPoint[2][1]
-    const isInRectLeftBottom = x> fourPoint[3][0] && y< fourPoint[3][1]
-    const { w,h } = {w:20,h:20}
-    // 判断当前点击点是否在四个控制点中
-    const pointerMap: {isIn: boolean;pointer: Direction}[]= [
-      {
-        isIn:x < fourPoint[0][0] && y<(fourPoint[0][1]+h/2) || y<fourPoint[0][1] && x< (fourPoint[0][0] + w/2)   ,
-        pointer:Directions.northWestern
-      },
-      {
-        isIn:x > fourPoint[1][0] && y<(fourPoint[1][1]+h/2) || y<fourPoint[1][1] && x > (fourPoint[1][0] - w/2),
-        pointer:Directions.northEstern
-      },
-      {
-        isIn:x > fourPoint[2][0] && y>(fourPoint[2][1]-h/2) || y>fourPoint[2][1] && x> (fourPoint[2][0] - w/2),
-        pointer:Directions.southEstern
-      },
-      {
-        isIn:x < fourPoint[3][0] && y>(fourPoint[3][1]-h/2) || y>fourPoint[3][1] && x< (fourPoint[0][0] + w/2),
-        pointer:Directions.southWest
-      }
-    ]
-    for(const item of pointerMap){
-      const { isIn,pointer } = item
-      if(isIn) {
-        state.updateCursorPointer(pointer)
-        break
-      }
-    }
-    return isInRectLeftTop && isInRectRightTop && isInRectRightBottom && isInRectLeftBottom
   }
   // 连线四个点
   connectFourPoint(start: DobuleNumber,list: DobuleNumber[]) {

@@ -159,8 +159,46 @@ export class State {
     console.log('index',index)
     this.index = index
   }
-  updateMouseDown(pos: MouseDown){
-    this.mouseDown = pos
+  judegeDraggingPosition(loc: XYPosition,controlPointPos: Rect | Circle){
+    const fourPoint = controlPointPos.controlPointPos
+    const {x,y} = loc
+    const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
+    const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
+    const isInRectRightBottom = x < fourPoint[2][0] && y< fourPoint[2][1]
+    const isInRectLeftBottom = x> fourPoint[3][0] && y< fourPoint[3][1]
+    const { w,h } = {w:20,h:20}
+    // 判断当前点击点是否在四个控制点中
+    const pointerMap: {isIn: boolean;pointer: Direction}[]= [
+      {
+        isIn:x < fourPoint[0][0] && y<(fourPoint[0][1]+h/2) || y<fourPoint[0][1] && x< (fourPoint[0][0] + w/2)   ,
+        pointer:Directions.northWestern
+      },
+      {
+        isIn:x > fourPoint[1][0] && y<(fourPoint[1][1]+h/2) || y<fourPoint[1][1] && x > (fourPoint[1][0] - w/2),
+        pointer:Directions.northEstern
+      },
+      {
+        isIn:x > fourPoint[2][0] && y>(fourPoint[2][1]-h/2) || y>fourPoint[2][1] && x> (fourPoint[2][0] - w/2),
+        pointer:Directions.southEstern
+      },
+      {
+        isIn:x < fourPoint[3][0] && y>(fourPoint[3][1]-h/2) || y>fourPoint[3][1] && x< (fourPoint[0][0] + w/2),
+        pointer:Directions.southWest
+      }
+    ]
+    for(const item of pointerMap){
+      const { isIn,pointer } = item
+      if(isIn) {
+        this.updateCursorPointer(pointer)
+        break
+      }
+    }
+    return isInRectLeftTop && isInRectRightTop && isInRectRightBottom && isInRectLeftBottom
+  }
+  updateMouseDown(loc: XYPosition){
+    const {x,y} = this.shapeList[this.index]
+    // 计算点击点距离初始时的 x,y 的距离，用于后面根据 x,y 来计算位置用
+    this.mouseDown = { diffX:loc.x - x,diffY:loc.y-y,x:loc.x,y:loc.y }
   }
   updateCursorPointer(cursorPointer: Direction) {
     this.cursorPointer = cursorPointer
