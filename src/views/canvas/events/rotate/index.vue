@@ -18,8 +18,8 @@
       const shapeList: Shape[] = [
         {
           type: 'rect',
-          x: 50,
-          y: 50,
+          x: 150,
+          y: 150,
           w: 100,
           h: 100,
           fillStyle: 'green',
@@ -28,8 +28,8 @@
         },
               {
         type: 'circle',
-        x: 250,
-        y: 100,
+        x: 300,
+        y: 200,
         r: 50,
         fillStyle: 'red',
         zIndex: 1

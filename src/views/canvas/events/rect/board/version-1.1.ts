@@ -76,6 +76,7 @@ export default class Canvas {
         const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
         this.state.updateMouseDown(loc)
+        console.log('this.isInRect(e)',this.isInRect(e))
         // 当点击了矩形选择框将 canMove 标记为 true
         if(this.isInRect(e)) {
           canvas.style.cursor = 'move'
@@ -114,16 +115,25 @@ export default class Canvas {
   mouseMove() {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
-      // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
-      if(this.hasPathIndex && this.state.canMove && !this.state.isControlSize) {
-        // 移动物体
-        if(this.isInRect(e)) {
-          this.moveShape(e)
+      console.log('cursor',this.state.cursorPointer)
+      if(this.hasPathIndex){
+        if(this.state.isRotate){
+          console.log('rotate')
+          return 
         }
-      }
-      if(this.hasPathIndex && this.state.isControlSize) {
-        // 缩放物体
-        this.scaleShape(e)
+        if(this.state.isInControl) {
+          // 缩放物体
+          this.scaleShape(e)
+          return 
+        }
+        // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
+        if(this.state.canMove && !this.state.isInControl) {
+          // 移动物体
+          if(this.isInRect(e)) {
+            this.moveShape(e)
+          }
+        }
+        
       }
     })
   }
@@ -198,7 +208,12 @@ export default class Canvas {
     if(this.hasPathIndex){
       // 如果点击时候选中的还是上一次绘制的，就不需要进行后面的判断
       if(this.ctx.isPointInPath(x,y)){
-        return 
+        const oldCursor = this.state.cursorPointer
+        this.state.findReferencePoint(this.adaptSelectedShape)
+        const cursor = this.state.cursorPointer
+        if(oldCursor === cursor) {
+          return 
+        }
       }
     }
     this.findPath(x, y)

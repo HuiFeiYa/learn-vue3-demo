@@ -69,6 +69,10 @@ export class Circle extends BaseShape{
     const {x,y} = this
     return [x,y]
   }
+  get referencePoint(): DobuleNumber {
+    const [cx,cy] = this.centerPosition
+    return [cx,cy-this.r]
+  }
   scale(state: State,loc: XYPosition) {
     // 通过矩形的两个对角计算出这个矩形的半径 r
     // 对角位置
@@ -90,17 +94,13 @@ export class Circle extends BaseShape{
     this.connectRotateControl(ctx)
   }
   drawRotateControl(ctx: CanvasRenderingContext2D) {
-    const [cx,cy] = this.centerPosition
-    const rotatePos: DobuleNumber = [cx,cy-this.r]
-    const [x,y] = this.rotateControlStart(rotatePos)
+    const [x,y] = this.rotateControlStart(this.referencePoint)
     const {w,h} = this.point
     // 绘制旋转控制点
     ctx.rect(x,y,w,h) 
   }
   connectRotateControl(ctx: CanvasRenderingContext2D) {
-    const [cx,cy] = this.centerPosition
-    const rotatePos: DobuleNumber = [cx,cy-this.r]
-    const [x,y] = this.rotateControlCenter(rotatePos)
+    const [x,y] = this.rotateControlCenter(this.referencePoint)
     ctx.moveTo(x,y)
     ctx.lineTo(x,y+this.rotateY)
     ctx.stroke()
@@ -137,6 +137,11 @@ export class Rect extends BaseShape {
     const { x,y,w,h } = this
     return [(x*2 +w)/2,(y*2+h)/ 2]
   }
+  // 找到旋转轴和 topL 、topR 的连线
+  get referencePoint(): DobuleNumber {
+    const [cx,cy] = this.centerPosition
+    return [cx,cy-this.h/2]
+  }
   scale(state: State,loc: XYPosition) {
     const { x:ax,y:ay } = state.acrossCornersPoint
     const shape = this.shape
@@ -170,17 +175,13 @@ export class Rect extends BaseShape {
     ctx.fill()
   }
   drawRotateControl(ctx: CanvasRenderingContext2D) {
-    const [cx,cy] = this.centerPosition
-    const rotatePos: DobuleNumber = [cx,cy-this.h/2]
-    const [x,y] = this.rotateControlStart(rotatePos)
+    const [x,y] = this.rotateControlStart(this.referencePoint)
     const {w,h} = this.point
     // 绘制旋转控制点
     ctx.rect(x,y,w,h) 
   }
   connectRotateControl(ctx: CanvasRenderingContext2D) {
-    const [cx,cy] = this.centerPosition
-    const rotatePos: DobuleNumber = [cx,cy-this.h/2]
-    const [x,y] = this.rotateControlCenter(rotatePos)
+    const [x,y] = this.rotateControlCenter(this.referencePoint)
     ctx.moveTo(x,y)
     ctx.lineTo(x,y+this.rotateY)
     ctx.stroke()
@@ -204,17 +205,19 @@ export class State {
   constructor(shapeList: Shape[]){
     this.shapeList = shapeList
   }
-  get isControlSize() {
+  get isInControl() {
     return this.cursorPointer !== 'default'
   }
   get currentShape() {
     return this.shapeList[this.index]
   }
+  get isRotate() {
+    return this.cursorPointer === Directions.crosshair
+  }
   add(shape: Shape) {
     this.shapeList.push(shape)
   }
   select(index: number){
-    console.log('index',index)
     this.index = index
   }
   resetPointerInPathList() {
@@ -231,11 +234,14 @@ export class State {
     const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
     const isInRectRightBottom = x < fourPoint[2][0] && y< fourPoint[2][1]
     const isInRectLeftBottom = x> fourPoint[3][0] && y< fourPoint[3][1]
-    const { w,h } = {w:20,h:20}
+    const { w,h } = ele.point
+    const rotateY = ele.rotateY
+    // 获取旋转点的参考,是中线点，
+    const [referX,referY] = ele.referencePoint
     // 判断当前点击点是否在四个控制点中
     const pointerMap: {isIn: boolean;pointer: Direction}[]= [
       {
-        isIn:x < fourPoint[0][0] && y<(fourPoint[0][1]+h/2) || y<fourPoint[0][1] && x< (fourPoint[0][0] + w/2)   ,
+        isIn:x < fourPoint[0][0] && y<(fourPoint[0][1]+h/2) && y>(fourPoint[0][1]-h/2)|| y<fourPoint[0][1] && x< (fourPoint[0][0] + w/2)   ,
         pointer:Directions.northWestern
       },
       {
@@ -249,6 +255,11 @@ export class State {
       {
         isIn:x < fourPoint[3][0] && y>(fourPoint[3][1]-h/2) || y>fourPoint[3][1] && x< (fourPoint[0][0] + w/2),
         pointer:Directions.southWest
+      },
+      {
+        // 由于是中心点要处理
+        isIn:x>(referX-w/2) && x < (referX+w/2) && y>(referY-h/2-rotateY) && y<(referY - rotateY+h/2),
+        pointer:Directions.crosshair
       }
     ]
     for(const item of pointerMap){
@@ -281,6 +292,7 @@ export class State {
         [Directions.northEstern]:1,
         [Directions.southEstern]:2,
         [Directions.southWest]:3,
+        [Directions.crosshair]:-2,
         'default':-1
       }
       let referencePoint
@@ -288,7 +300,10 @@ export class State {
       const fourPoint = ele.controlPointPos
       // 找到当前点击的控制点，参照点是这个点的对角
       const index = indexMap[this.cursorPointer]
-      
+      if(index === -2){
+        this.updateCursorPointer(Directions.crosshair)
+        return 
+      }
       if(index !== -1){
         referencePoint = fourPoint[index]
         // 对角的坐标，由于是四边形所以相隔两个位置
