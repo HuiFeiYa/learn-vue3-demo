@@ -1,17 +1,15 @@
 
 import { Shape,XYPosition,Direction,MouseDown,Boundary,Directions,CircleShape,RectShape,DobuleNumber } from './scaleConfig'
-class BaseShape {
+export class BaseShape {
   x!: number;
   y!: number;
-  fillStyle!: string;
-  zIndex!: number;
+  zIndex?: number;
   // 控制点的大小
   point = { w:20,h:20 }
   constructor(shape: Shape) {
-    const { x,y,fillStyle,zIndex } = shape
+    const { x,y,zIndex } = shape
     this.x = x 
     this.y = y
-    this.fillStyle = fillStyle
     this.zIndex = zIndex
   }
   // 绘制控制点
@@ -39,11 +37,13 @@ class BaseShape {
 export class Circle extends BaseShape{
   r: number
   shape!: CircleShape
+  fillStyle: string;
   constructor(shape: CircleShape){
     super(shape)
-    const { r } = shape 
+    const { r, fillStyle } = shape 
     this.r = r
     this.shape = shape
+    this.fillStyle = fillStyle
   }
   // 按照(topL,topR,bottomR,bottomL) 的顺序返回
   get controlPointPos(): DobuleNumber[]{
@@ -86,12 +86,14 @@ export class Rect extends BaseShape {
   w: number
   h: number
   shape: RectShape
+  fillStyle: string;
   constructor(shape: RectShape){
     super(shape)
-    const { w,h } = shape
+    const { w,h,fillStyle } = shape
     this.w = w
     this.h = h
     this.shape = shape
+    this.fillStyle = fillStyle
   }
   get controlPointPos(): DobuleNumber[]{
     const {w,h,x,y} = this

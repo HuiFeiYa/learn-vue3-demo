@@ -19,6 +19,10 @@ const routes: Array<RouteConfig> = [
     component: () => import('../views/css/FlexBasis/index.vue')
   },
   {
+    path: '/canvas/event/rotate',
+    component: () => import('../views/canvas/events/rotate/index.vue')
+  },
+  {
     path: '/canvas/event/rect',
     component: () => import('../views/canvas/events/rect/index.vue')
   },
