@@ -45,6 +45,7 @@ export class Circle extends BaseShape{
     this.r = r
     this.shape = shape
   }
+  // 按照(topL,topR,bottomR,bottomL) 的顺序返回
   get controlPointPos(): DobuleNumber[]{
     const { r,x,y } = this
     return [
@@ -159,8 +160,9 @@ export class State {
     console.log('index',index)
     this.index = index
   }
-  judegeDraggingPosition(loc: XYPosition,controlPointPos: Rect | Circle){
-    const fourPoint = controlPointPos.controlPointPos
+  // 判断点击落在哪个控制点上，找到对应的 cursor
+  judegeDraggingPosition(loc: XYPosition,ele: Rect | Circle){
+    const fourPoint = ele.controlPointPos
     const {x,y} = loc
     const isInRectLeftTop = x > fourPoint[0][0] && y>fourPoint[0][1]  
     const isInRectRightTop = x < fourPoint[1][0] && y> fourPoint[1][1]
@@ -208,6 +210,34 @@ export class State {
   }
   updateAcrossCornersPoint(point: XYPosition){
     this.acrossCornersPoint = point
+  }
+  findReferencePoint(ele: Rect | Circle){
+      // 矩形的顺序从左上逆时针旋转
+      const indexMap = {
+        [Directions.northWestern]:0,
+        [Directions.northEstern]:1,
+        [Directions.southEstern]:2,
+        [Directions.southWest]:3,
+        'default':-1
+      }
+      let referencePoint
+      // 找到该图形的四个点
+      const fourPoint = ele.controlPointPos
+      // 找到当前点击的控制点，参照点是这个点的对角
+      const index = indexMap[this.cursorPointer]
+      
+      if(index !== -1){
+        referencePoint = fourPoint[index]
+        // 对角的坐标，由于是四边形所以相隔两个位置
+        const acrossCornersIndex = (index + 2) % 4
+        const acrossCorners = fourPoint[acrossCornersIndex]
+        this.updateAcrossCornersPoint({
+          x:acrossCorners[0],
+          y:acrossCorners[1]
+        })
+      }else{
+        console.error('未找到控制点')
+      }
   }
   getBoundary() {
     // 判断当前角属于哪个角

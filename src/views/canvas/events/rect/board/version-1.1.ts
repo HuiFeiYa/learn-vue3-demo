@@ -97,22 +97,24 @@ class Canvas {
         const loc = this.windowLocToCanvas(e)
         // 计算拖动点距离中心点的距离，这样当 onmousemove 事件触发的时候要去通过这个来计算当前的中心点在哪里。
         state.updateMouseDown(loc)
-        const isInRect = state.judegeDraggingPosition(loc,this.adaptSelectedShape)
         // 当点击了矩形选择框将 canMove 标记为 true
-        if(isInRect) {
+        if(this.isInRect(e)) {
           canvas.style.cursor = 'move'
         }else{
           canvas.style.cursor = state.cursorPointer
-           // 找到控制点的对角，记录下它的位置，保存在 acrossCornersPoint 变量中。根据这个坐标来生成鼠标移动的界限
-          this.findReferencePoint()
-          // 找到鼠标移动的边界值,保存在 boundary 变量中
-          state.getBoundary()
+          this.updateAssistPostion()
         }
         state.updateMoveStatus(true)
       }else{
         canvas.style.cursor = 'default'
       }
     })
+  }
+  updateAssistPostion() {
+    // 找到控制点的对角，记录下它的位置，保存在 acrossCornersPoint 变量中。根据这个坐标来生成鼠标移动的界限
+    state.findReferencePoint(this.adaptSelectedShape)
+    // 找到鼠标移动的边界值,保存在 boundary 变量中
+    state.getBoundary()
   }
   preJudgeHandle(e: MouseEvent) {
     // 将之前选中图形的序号保留
@@ -126,15 +128,17 @@ class Canvas {
       return true
     }
   }
+  isInRect(e: MouseEvent){
+    const loc = this.windowLocToCanvas(e)
+    return state.judegeDraggingPosition(loc,this.adaptSelectedShape)
+  }
   mouseMove() {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
       // 选中移动的图形，此时显示了控制框，接下来要判断的是点击位置落在控制点上还是图形上
       if(this.hasPathIndex && state.canMove && !state.isControlSize) {
-        const loc = this.windowLocToCanvas(e)
-        const isInRect = state.judegeDraggingPosition(loc,this.adaptSelectedShape)
         // 移动物体
-        if(isInRect) {
+        if(this.isInRect(e)) {
           this.moveShape(e)
         }
       }
@@ -179,34 +183,6 @@ class Canvas {
   /*** 图形的缩放操作 */
   scaleShape(e: MouseEvent) {
     this.update(e)
-  }
-  findReferencePoint() {
-    // 矩形的顺序从左上逆时针旋转
-    const indexMap = {
-      [Directions.northWestern]:0,
-      [Directions.northEstern]:1,
-      [Directions.southEstern]:2,
-      [Directions.southWest]:3,
-      'default':-1
-    }
-    let referencePoint
-    // 找到该图形的四个点
-    const fourPoint = this.adaptSelectedShape.controlPointPos
-    // 找到当前点击的控制点，参照点是这个点的对角
-    const index = indexMap[state.cursorPointer]
-    
-    if(index !== -1){
-      referencePoint = fourPoint[index]
-      // 对角的坐标，由于是四边形所以相隔两个位置
-      const acrossCornersIndex = (index + 2) % 4
-      const acrossCorners = fourPoint[acrossCornersIndex]
-      state.updateAcrossCornersPoint({
-        x:acrossCorners[0],
-        y:acrossCorners[1]
-      })
-    }else{
-      console.error('未找到控制点')
-    }
   }
   update(e: MouseEvent) {
     const loc = this.windowLocToCanvas(e)
