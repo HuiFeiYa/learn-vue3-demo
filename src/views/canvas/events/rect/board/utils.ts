@@ -4,14 +4,17 @@ export class BaseShape {
   x!: number;
   y!: number;
   zIndex?: number;
+  rotateDeg = 0
+  // 旋转控制点距离边的距离
   rotateY= 80
   // 控制点的大小
   point = { w:20,h:20 }
   constructor(shape: Shape) {
-    const { x,y,zIndex } = shape
+    const { x,y,zIndex,rotateDeg } = shape
     this.x = x 
     this.y = y
     this.zIndex = zIndex
+    this.rotateDeg = rotateDeg || 0
   }
   // 绘制控制点
   drawControlsPoint(list: DobuleNumber[],ctx: CanvasRenderingContext2D) {
@@ -168,11 +171,22 @@ export class Rect extends BaseShape {
     this.connectRotateControl(ctx)
   }
   drawShape(ctx: CanvasRenderingContext2D) {
-    const { x, y, fillStyle, w, h } = this.shape
-    ctx.beginPath()
-    ctx.rect(x, y, w, h)
-    ctx.fillStyle = fillStyle
-    ctx.fill()
+    const { x, y, fillStyle, w, h,rotateDeg } = this.shape
+    if(rotateDeg) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.translate(x+w/2,y+h/2)
+      ctx.rotate(rotateDeg*Math.PI/180)
+      ctx.rect(-w/2, -h/2, w, h)
+      ctx.fillStyle = fillStyle
+      ctx.fill()
+      ctx.restore()
+    }else{
+      ctx.beginPath()
+      ctx.rect(x, y, w, h)
+      ctx.fillStyle = fillStyle
+      ctx.fill()
+    }
   }
   drawRotateControl(ctx: CanvasRenderingContext2D) {
     const [x,y] = this.rotateControlStart(this.referencePoint)

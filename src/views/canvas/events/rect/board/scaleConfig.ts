@@ -7,6 +7,7 @@ interface CommonShape {
   pathIndex?: number;
   centerX?: number;
   centerY?: number;
+  rotateDeg: number;
 }
 export interface RectShape extends CommonShape {
   type: 'rect';

@@ -108,6 +108,7 @@ export default class Canvas {
       return true
     }
   }
+  // 只能判断是否在矩形范围内，不能判断是否在路径内
   isInRect(e: MouseEvent){
     const loc = this.windowLocToCanvas(e)
     return this.state.judegeDraggingPosition(loc,this.adaptSelectedShape)
@@ -115,10 +116,8 @@ export default class Canvas {
   mouseMove() {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e =>{
-      console.log('cursor',this.state.cursorPointer)
       if(this.hasPathIndex){
         if(this.state.isRotate){
-          console.log('rotate')
           return 
         }
         if(this.state.isInControl) {
