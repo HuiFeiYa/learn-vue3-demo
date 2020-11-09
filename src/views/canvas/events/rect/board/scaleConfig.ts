@@ -46,3 +46,8 @@ export interface MouseDown extends XYPosition {
   diffY: number;
 }
 export type DobuleNumber = [number,number]
+
+export interface Path{
+  path:CanvasPath;
+  zIndex:number;
+}
