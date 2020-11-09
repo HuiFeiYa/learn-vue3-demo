@@ -10,3 +10,5 @@ export type Direction = Directions.northWestern | Directions.northEstern
 
 let arr:Direction[] = ['nw-resize']
 let list:Direction[] = [Directions.northEstern]
+
+

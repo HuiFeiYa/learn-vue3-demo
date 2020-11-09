@@ -25,7 +25,7 @@
           fillStyle: 'green',
           // 表示当前图形的层级，用于重叠时候判断哪个在上面
           zIndex: 0,
-          rotateDeg:45
+          rotateDeg:0
         },
               {
         type: 'circle',

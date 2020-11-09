@@ -4,7 +4,6 @@
       ref="canvas"
       width="400"
       height="400"
-      @click="onCanvasClick"
     ></canvas>
   </div>
 </template>
@@ -30,10 +29,42 @@ export default {
     const canvas = this.$refs.canvas
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
-    this.initRect()
-    canvas.addEventListener('mousemove', this.canvasMove)
+    const ctx = this.ctx
+    const path1 = new Path2D()
+    const path2 = new Path2D()
+      // ctx.beginPath()
+      ctx.fillStyle = 'red'
+      path1.rect(100,100,50,100)
+      ctx.rotate(30*Math.PI / 180)
+      ctx.fill(path1)
+      // ctx.beginPath()
+      path2.arc(200,100,40,Math.PI*2,0)
+      ctx.fillStyle = 'green'
+      ctx.fill(path2)
+      this.canvas.addEventListener('click',function(e){
+        const {clientX,clientY} = e
+        console.log('path1',ctx.isPointInPath(path1,clientX,clientY))
+        console.log('path2',ctx.isPointInPath(path2,clientX,clientY))
+      })
+  
   },
   methods: {
+    init() {
+      const ctx = this.ctx
+          ctx.beginPath()
+      ctx.fillStyle = 'red'
+      ctx.rect(100,100,50,100)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(200,100,40,Math.PI*2,0)
+      ctx.fillStyle = 'green'
+      ctx.fill()
+      this.canvas.addEventListener('click',function(e){
+        const {clientX,clientY} = e
+        const isPointInPath = ctx.isPointInPath(clientX,clientY)
+        console.log('isPointInPath',isPointInPath)
+      })
+    },
     initRect() {
       const { x, y, w, h } = box
       this.ctx.beginPath()
