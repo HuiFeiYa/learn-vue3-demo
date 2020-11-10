@@ -30,14 +30,19 @@ export default {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     const ctx = this.ctx
+      // ctx.save()
     const path1 = new Path2D()
-    const path2 = new Path2D()
-      // ctx.beginPath()
+
       ctx.fillStyle = 'red'
+      // ctx.translate(100,100)
+      // path1.rect(0,0,50,100)
       path1.rect(100,100,50,100)
       ctx.rotate(30*Math.PI / 180)
       ctx.fill(path1)
-      // ctx.beginPath()
+      // ctx.restore()
+    const path2 = new Path2D()
+      // ctx.translate(200,100)
+      // path2.arc(0,0,40,Math.PI*2,0)
       path2.arc(200,100,40,Math.PI*2,0)
       ctx.fillStyle = 'green'
       ctx.fill(path2)

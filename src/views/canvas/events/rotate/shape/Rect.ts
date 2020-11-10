@@ -1,4 +1,4 @@
-import { RectShape,DobuleNumber,Shape } from '../types/index'
+import { RectShape,DobuleNumber,Shape,Directions } from '../types/index'
 import BaseShape from './BaseShape'
 import State from '../State'
 export default class Rect extends BaseShape{
@@ -40,12 +40,24 @@ export default class Rect extends BaseShape{
       path.rect(-w/2, -h/2, w, h)
       ctx.fillStyle = fillStyle
       ctx.fill(path)
+      // 当用户点击的时候判断是否点击到矩形位置,这里必须放在 restore 之前
+      this.judgeIsPointInPath(ctx,path,Directions.move)
       ctx.restore()
     }else{
       ctx.beginPath()
       path.rect(x, y, w, h)
       ctx.fillStyle = fillStyle
+      // 当用户点击的时候判断是否点击到矩形位置
+      this.judgeIsPointInPath(ctx,path,Directions.move)
       ctx.fill(path)
+    }
+  }
+  judgeIsPointInPath(ctx: CanvasRenderingContext2D,path: Path2D,direct: Directions){
+    if(this.state.isClick) {
+      const {x,y} = this.state.mouseDown
+      if(ctx.isPointInPath(path,x,y)){
+        this.state.clickPositin = direct
+      }
     }
   }
   drawControls(ctx: CanvasRenderingContext2D) {
@@ -73,14 +85,17 @@ export default class Rect extends BaseShape{
       this.connectCtrolPoint(this.controlPointPos,ctx)
       this.drawRotateControl(ctx)
       this.connectRotateControl(ctx)
-      ctx.stroke()
     }
   }
   // 绘制控制点
   drawControlsPoint(list: DobuleNumber[],ctx: CanvasRenderingContext2D) {
     const { w,h } = this.point
     list.forEach(([x,y])=>{
-      ctx.rect(x-w/2,y-h/2,w,h)
+      const path = new Path2D()
+      ctx.strokeStyle = 'blue'
+      path.rect(x-w/2,y-h/2,w,h)
+      this.judgeIsPointInPath(ctx,path,Directions.northEstern)
+      ctx.stroke(path)
     })
   }
   // 连接各个绘制点
@@ -108,14 +123,17 @@ export default class Rect extends BaseShape{
     const { rotateDeg } = this.shape
     const [x,y] = this.rotateControlStart(this.referencePoint)
     const {w,h} = this.point
+    const path = new Path2D()
     if(rotateDeg){
       const [cx,cy] = this.centerPosition
       // 绘制旋转控制点
-      ctx.rect(x-cx,y-cy,w,h) 
+      path.rect(x-cx,y-cy,w,h) 
     }else{
       // 绘制旋转控制点
-      ctx.rect(x,y,w,h) 
+      path.rect(x,y,w,h) 
     }
+    ctx.stroke(path)
+    this.judgeIsPointInPath(ctx,path,Directions.crosshair)
   }
   connectRotateControl(ctx: CanvasRenderingContext2D) {
     const { rotateDeg } = this.shape

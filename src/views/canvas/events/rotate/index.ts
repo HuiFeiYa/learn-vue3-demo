@@ -17,6 +17,8 @@ export default class Canvas{
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
     this.getImageData()
     this.listen()
+    // 开始设定选中第一个图形测试用
+    this.state.updateIndex(0)
   }
   // 存储初始化的 canvas 图像
   getImageData() {
@@ -30,7 +32,13 @@ export default class Canvas{
   mouseDown() {
     const canvas = this.canvas
     canvas.addEventListener('mousedown',e=>{
-      const loc = this.windowLocToCanvas(e)
+      const {x,y} = this.windowLocToCanvas(e)
+      this.state.mouseDown = {x,y}
+      // 点击的时候重新绘制图形判断点击点落在哪里
+      this.state.isClick = true
+      this.initDraw()
+      const { controlPathList, shapePath } = this.state.currentShape
+      console.log('shapePath',this.state.clickPositin)
     })
   }
   mouseMove() {

@@ -8,8 +8,8 @@ interface CommonShape {
   centerX?: number;
   centerY?: number;
   rotateDeg: number;
-  shapePath:CanvasPath;
-  controlPathList:CanvasPath[]
+  shapePath: Path2D;
+  controlPathList: Path2D[];
 }
 export interface RectShape extends CommonShape {
   type: 'rect';
@@ -33,11 +33,12 @@ export enum Directions {
   northEstern='ne-resize',
   southEstern='se-resize',
   southWest='sw-resize',
-  crosshair='crosshair'
+  crosshair='crosshair',
+  move='move'
 }
 // export type Shape = RectShape | CircleShape 
 export type Shape = RectShape
-export type Direction = Directions.northWestern | Directions.northEstern | Directions.southEstern| Directions.southWest | 'default' | Directions.crosshair
+export type Direction = Directions.northWestern | Directions.northEstern | Directions.southEstern| Directions.southWest | 'default' | Directions.crosshair | Directions.move
 
 export type Boundary = { minX: number; minY: number } | { minX: number; maxY: number } | { maxX: number; minY: number } | { maxX: number; maxY: number }
 export interface XYPosition {
@@ -51,6 +52,17 @@ export interface MouseDown extends XYPosition {
 export type DobuleNumber = [number,number]
 
 export interface Path{
-  path: CanvasPath;
+  path: Path2D;
   zIndex: number;
+}
+export interface RectTranslate {
+  x: number;
+  y: number;
+  translateX: number;
+  translateY: number;
+  startX: number;
+  startY: number;
+  fillStyle: string;
+  w: number;
+  h: number;
 }
