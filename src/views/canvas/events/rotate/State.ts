@@ -9,4 +9,19 @@ export default class State {
     constructor(shapeList: Shape[]){
       this.shapeList = shapeList
     }
+    updateShapePath(shapePath: CanvasPath) {
+      const index = this.index
+      if(index === -1) {
+        console.error('updateShapePath时未找到指定图形')
+      }
+      this.shapeList[index].shapePath = shapePath
+    }
+    updateControlPathList(controlPathList: CanvasPath[]){
+      const index = this.index
+      if(index === -1) {
+        console.error('updateControlPathList时未找到指定图形')
+      }
+      this.shapeList[index].controlPathList = controlPathList
+    }
 }
+// shapePath controlPathList

@@ -8,6 +8,8 @@ interface CommonShape {
   centerX?: number;
   centerY?: number;
   rotateDeg: number;
+  shapePath:CanvasPath;
+  controlPathList:CanvasPath[]
 }
 export interface RectShape extends CommonShape {
   type: 'rect';
@@ -33,7 +35,8 @@ export enum Directions {
   southWest='sw-resize',
   crosshair='crosshair'
 }
-export type Shape = RectShape | CircleShape 
+// export type Shape = RectShape | CircleShape 
+export type Shape = RectShape
 export type Direction = Directions.northWestern | Directions.northEstern | Directions.southEstern| Directions.southWest | 'default' | Directions.crosshair
 
 export type Boundary = { minX: number; minY: number } | { minX: number; maxY: number } | { maxX: number; minY: number } | { maxX: number; maxY: number }

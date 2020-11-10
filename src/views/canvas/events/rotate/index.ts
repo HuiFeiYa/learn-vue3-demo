@@ -1,7 +1,6 @@
 import State from './State'
 import {Rect,Circle} from './shape/index'
 import { Shape } from './types/index'
-console.log('shape',Rect,Circle)
 // console.log('shape',shape)
 export default class Canvas{
   canvas: HTMLCanvasElement
@@ -47,11 +46,11 @@ export default class Canvas{
     })
   }
   adaptShape(shape: Shape) {
-    if(shape.type === 'rect'){
-      return new Rect(shape)
-    }else{
-      return new Circle(shape)
-    }
+    // if(shape.type === 'rect'){
+      return new Rect(shape,this.state)
+    // }else{
+    //   return new Circle(shape)
+    // }
   }
   windowLocToCanvas(e: MouseEvent) {
     const { clientX, clientY } = e
@@ -67,6 +66,7 @@ export default class Canvas{
     this.ctx.putImageData(imageData, 0, 0)
     for (const [index,shape] of this.state.shapeList.entries()) {
       this.adaptShape(shape).drawShape(ctx)
+      this.adaptShape(shape).drawControls(ctx)
     }
   }
 }

@@ -18,4 +18,7 @@ export default class Circle extends BaseShape{
     ctx.fillStyle = fillStyle
     ctx.fill()
   }
+  drawControls(ctx: CanvasRenderingContext2D) {
+    const { x, y, fillStyle, r } = this.shape 
+  }
 }
