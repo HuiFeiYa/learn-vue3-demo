@@ -51,6 +51,10 @@ const routes: Array<RouteConfig> = [
     component: () => import('../views/canvas/chapter1/helloword.vue')
   },
   {
+    path: '/function/module',
+    component:() => import('../views/function/module/index.vue')
+  },
+  {
     path: '/function/jsx',
     component: () => import('../views/function/jsx/index.vue')
   },

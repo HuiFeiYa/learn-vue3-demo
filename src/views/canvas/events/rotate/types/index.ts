@@ -1,4 +1,4 @@
-import { config } from '../../../../todoList/config';
+
 interface CommonShape {
   x: number;
   y: number;
