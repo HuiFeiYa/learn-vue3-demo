@@ -6,8 +6,8 @@ export default class Rect extends BaseShape{
   h: number
   shape: RectShape
   fillStyle: string;
-  constructor(shape: RectShape,state: State){
-    super(shape,state)
+  constructor(shape: RectShape,state: State,index: number){
+    super(shape,state,index)
     const { w,h,fillStyle } = shape
     this.w = w
     this.h = h
@@ -20,15 +20,19 @@ export default class Rect extends BaseShape{
       [x,y],[x+w,y],[x+w,y+h],[x,y+h]
     ]
   }
+  get totalAngle() {
+    const { initDeg,rotateDeg } = this.shape
+    return initDeg + rotateDeg
+  }
   get controlPointPosWidthText(): {pos: DobuleNumber;cursor: Direction}[]{
     const direction: Direction[] = [Directions.northWestern,Directions.northEstern,Directions.southEstern,Directions.southWest]
     const [cx,cy] = this.centerPosition
-    const { rotateDeg } = this.shape
+    const { totalAngle } = this
     return this.controlPointPos.map(([x,y],index)=>{
       const list: DobuleNumber = [x-cx,y-cy]
       return {
         // 旋转和非旋转的只有坐标不一样，其他都一样 
-        pos: rotateDeg?[x-cx,y-cy]:[x,y],
+        pos: totalAngle?[x-cx,y-cy]:[x,y],
         cursor:direction[index]
       }
     })
@@ -43,13 +47,15 @@ export default class Rect extends BaseShape{
     return [cx,cy-this.h/2]
   }
   drawShape(ctx: CanvasRenderingContext2D) {
-    const { x, y, fillStyle, w, h,rotateDeg } = this.shape
+    const { x, y, fillStyle, w, h } = this.shape
+    const { totalAngle } = this
     const path = new Path2D()
-    if(rotateDeg) {
+    const isPointInPath = false
+    if(totalAngle) {
       ctx.save()
       ctx.beginPath()
       ctx.translate(x+w/2,y+h/2)
-      ctx.rotate(rotateDeg*Math.PI/180)
+      ctx.rotate(totalAngle)
       path.rect(-w/2, -h/2, w, h)
       ctx.fillStyle = fillStyle
       ctx.fill(path)
@@ -66,21 +72,28 @@ export default class Rect extends BaseShape{
     }
   }
   judgeIsPointInPath(ctx: CanvasRenderingContext2D,path: Path2D,direct: Direction){
-    if(this.state.isClick) {
-      const {x,y} = this.state.mouseDown
-      if(ctx.isPointInPath(path,x,y)){
-        this.state.clickPositin = direct
-      }
+    // if(this.state.isClick) {
+    const {x,y} = this.state.mouseDown
+    if(ctx.isPointInPath(path,x,y)){
+      this.state.clickPositin = direct
+      // 更新当前选中的图形序号
+      this.state.updateIndex(this.index)
+      this.state.isClick = true
+      // }
+    }else{
+      this.state.updateIndex(-1)
     }
   }
   drawControls(ctx: CanvasRenderingContext2D) {
-    const { rotateDeg } = this.shape
-    if(rotateDeg) {
+    // 如果未选中图形，则不绘制选择框
+    // if(this.state.index === this.index && this.state.isClick) {}
+    const { totalAngle } = this
+    if(totalAngle) {
       ctx.save()
       ctx.beginPath()
       const [cx,cy] = this.centerPosition
       ctx.translate(cx,cy)
-      ctx.rotate(rotateDeg * Math.PI / 180)
+      ctx.rotate(totalAngle)
       const list: DobuleNumber[] = this.controlPointPos.map(item=>{
         const [x,y] = item
         return [x-cx,y-cy]
@@ -135,11 +148,11 @@ export default class Rect extends BaseShape{
     return [cx,cy - this.rotateY]
   }
   drawRotateControl(ctx: CanvasRenderingContext2D) {
-    const { rotateDeg } = this.shape
+    const { totalAngle } = this
     const [x,y] = this.rotateControlStart(this.referencePoint)
     const {w,h} = this.point
     const path = new Path2D()
-    if(rotateDeg){
+    if(totalAngle){
       const [cx,cy] = this.centerPosition
       // 绘制旋转控制点
       path.rect(x-cx,y-cy,w,h) 
@@ -151,11 +164,11 @@ export default class Rect extends BaseShape{
     this.judgeIsPointInPath(ctx,path,Directions.crosshair)
   }
   connectRotateControl(ctx: CanvasRenderingContext2D) {
-    const { rotateDeg } = this.shape
+    const { totalAngle } = this
     const [x,y] = this.rotateControlCenter(this.referencePoint)
     const [cx,cy] = this.centerPosition
     ctx.beginPath()
-    if(rotateDeg) {
+    if(totalAngle) {
       ctx.moveTo(x-cx,y-cy)
       ctx.lineTo(x-cx,y+this.rotateY - cy)
     }else{

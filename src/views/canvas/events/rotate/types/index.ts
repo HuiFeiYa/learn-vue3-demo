@@ -7,7 +7,10 @@ interface CommonShape {
   pathIndex?: number;
   centerX?: number;
   centerY?: number;
+  // 负责单词旋转了多少角度,每次旋转结束后需要 重置为0
   rotateDeg: number;
+  // 负责初始或者更新完以后的角度
+  initDeg: number;
   shapePath: Path2D;
   controlPathList: Path2D[];
 }

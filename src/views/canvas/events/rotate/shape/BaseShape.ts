@@ -10,12 +10,15 @@ export default class BaseShape {
   // 控制点的大小
   point = { w:20,h:20 }
   state: State
-  constructor(shape: Shape,state: State) {
+  // 当前图形处于列表中的位置
+  index: number
+  constructor(shape: Shape,state: State,index: number) {
     const { x,y,zIndex,rotateDeg } = shape
     this.x = x 
     this.y = y
     this.zIndex = zIndex
     this.rotateDeg = rotateDeg || 0
     this.state = state
+    this.index = index 
   }
 }

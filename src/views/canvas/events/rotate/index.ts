@@ -1,7 +1,6 @@
 import State from './State'
 import {Rect,Circle} from './shape/index'
-import { Shape } from './types/index'
-// console.log('shape',shape)
+import { Shape, MouseDown, XYPosition } from './types/index';
 export default class Canvas{
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
@@ -37,15 +36,28 @@ export default class Canvas{
       // 点击的时候重新绘制图形判断点击点落在哪里
       this.state.isClick = true
       this.initDraw()
-      const { controlPathList, shapePath } = this.state.currentShape
-      console.log('shapePath',this.state.clickPositin)
     })
   }
   mouseMove() {
     const canvas = this.canvas
     canvas.addEventListener('mousemove',e=>{
       const loc = this.windowLocToCanvas(e)
+      const { isRotating,mouseDown:{ x, y } } = this.state
+      // 判断当前物体是否处于旋转控制点
+      if(isRotating) {
+        this.calcRotateAngle(loc)
+      }
     })
+  }
+  calcRotateAngle(loc: XYPosition){
+    const { mouseDown:{x:mx,y:my} } = this.state
+    const shape = this.state.currentShape
+    const [cx,cy] = this.adaptShape(shape,this.state.index).centerPosition
+    const { x,y } = loc
+    const initDeg = Math.atan2(my-cy,mx-cx)
+    const currentDeg = Math.atan2(y-cy,x-cx)
+    this.state.updateAngle(currentDeg-initDeg)
+    this.initDraw()
   }
   mouseUp() {
     const canvas = this.canvas
@@ -53,11 +65,17 @@ export default class Canvas{
       const loc = this.windowLocToCanvas(e)
       // 重置 clickPosition 的位置，当mousedown点击控制点的时候会去更新位置，其他时候默认为 default 
       this.state.clickPositin = 'default'
+      if(this.state.isSelectShape){
+        // 更新角度
+        const { initDeg,rotateDeg } = this.state.currentShape
+        this.state.currentShape.initDeg += rotateDeg
+        this.state.currentShape.rotateDeg = 0
+      }
     })
   }
-  adaptShape(shape: Shape) {
+  adaptShape(shape: Shape,index: number) {
     // if(shape.type === 'rect'){
-      return new Rect(shape,this.state)
+      return new Rect(shape,this.state,index)
     // }else{
     //   return new Circle(shape)
     // }
@@ -75,8 +93,8 @@ export default class Canvas{
     // 将画面首次的图形重新填充到 canvas 上，由于后面绘制会产生很多 path ，但是在重置画面的时候不像绘制这些 path
     this.ctx.putImageData(imageData, 0, 0)
     for (const [index,shape] of this.state.shapeList.entries()) {
-      this.adaptShape(shape).drawShape(ctx)
-      this.adaptShape(shape).drawControls(ctx)
+      this.adaptShape(shape,index).drawShape(ctx)
+      this.adaptShape(shape,index).drawControls(ctx)
     }
   }
 }

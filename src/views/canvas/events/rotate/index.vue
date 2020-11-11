@@ -17,9 +17,12 @@
         fillStyle: 'green',
         // 表示当前图形的层级，用于重叠时候判断哪个在上面
         zIndex: 0,
-        rotateDeg:40,
+        rotateDeg:0,
+        // 初始角度值
+        initDeg:40*Math.PI / 180,
         shapePath:new Path2D(),
-        controlPathList:[]
+        controlPathList:[],
+        isClick:false
       },
       {
         type: 'rect',
@@ -31,8 +34,11 @@
         // 表示当前图形的层级，用于重叠时候判断哪个在上面
         zIndex: 0,
         rotateDeg:0,
+         // 初始角度值
+        initDeg:0,
         shapePath:new Path2D(),
-        controlPathList:[]
+        controlPathList:[],
+        isClick:false
       },
       // ,
       // {
