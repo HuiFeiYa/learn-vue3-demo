@@ -72,16 +72,12 @@ export default class Rect extends BaseShape{
     }
   }
   judgeIsPointInPath(ctx: CanvasRenderingContext2D,path: Path2D,direct: Direction){
-    // if(this.state.isClick) {
     const {x,y} = this.state.mouseDown
     if(ctx.isPointInPath(path,x,y)){
       this.state.clickPositin = direct
       // 更新当前选中的图形序号
       this.state.updateIndex(this.index)
       this.state.isClick = true
-      // }
-    }else{
-      this.state.updateIndex(-1)
     }
   }
   drawControls(ctx: CanvasRenderingContext2D) {

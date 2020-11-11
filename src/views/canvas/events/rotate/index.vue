@@ -21,8 +21,7 @@
         // 初始角度值
         initDeg:40*Math.PI / 180,
         shapePath:new Path2D(),
-        controlPathList:[],
-        isClick:false
+        controlPathList:[]
       },
       {
         type: 'rect',
@@ -37,8 +36,7 @@
          // 初始角度值
         initDeg:0,
         shapePath:new Path2D(),
-        controlPathList:[],
-        isClick:false
+        controlPathList:[]
       },
       // ,
       // {
