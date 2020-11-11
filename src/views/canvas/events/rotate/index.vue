@@ -20,7 +20,20 @@
         rotateDeg:40,
         shapePath:new Path2D(),
         controlPathList:[]
-      }
+      },
+      {
+        type: 'rect',
+        x: 300,
+        y: 150,
+        w: 100,
+        h: 100,
+        fillStyle: 'red',
+        // 表示当前图形的层级，用于重叠时候判断哪个在上面
+        zIndex: 0,
+        rotateDeg:0,
+        shapePath:new Path2D(),
+        controlPathList:[]
+      },
       // ,
       // {
       //   type: 'circle',

@@ -1,4 +1,4 @@
-import { RectShape,DobuleNumber,Shape,Directions } from '../types/index'
+import { RectShape,DobuleNumber,Shape,Directions,Direction } from '../types/index'
 import BaseShape from './BaseShape'
 import State from '../State'
 export default class Rect extends BaseShape{
@@ -19,6 +19,19 @@ export default class Rect extends BaseShape{
     return [
       [x,y],[x+w,y],[x+w,y+h],[x,y+h]
     ]
+  }
+  get controlPointPosWidthText(): {pos: DobuleNumber;cursor: Direction}[]{
+    const direction: Direction[] = [Directions.northWestern,Directions.northEstern,Directions.southEstern,Directions.southWest]
+    const [cx,cy] = this.centerPosition
+    const { rotateDeg } = this.shape
+    return this.controlPointPos.map(([x,y],index)=>{
+      const list: DobuleNumber = [x-cx,y-cy]
+      return {
+        // 旋转和非旋转的只有坐标不一样，其他都一样 
+        pos: rotateDeg?[x-cx,y-cy]:[x,y],
+        cursor:direction[index]
+      }
+    })
   }
   get centerPosition(): DobuleNumber{
     const { x,y,w,h } = this
@@ -52,7 +65,7 @@ export default class Rect extends BaseShape{
       ctx.fill(path)
     }
   }
-  judgeIsPointInPath(ctx: CanvasRenderingContext2D,path: Path2D,direct: Directions){
+  judgeIsPointInPath(ctx: CanvasRenderingContext2D,path: Path2D,direct: Direction){
     if(this.state.isClick) {
       const {x,y} = this.state.mouseDown
       if(ctx.isPointInPath(path,x,y)){
@@ -72,29 +85,29 @@ export default class Rect extends BaseShape{
         const [x,y] = item
         return [x-cx,y-cy]
       })
-      this.drawControlsPoint(list,ctx)
+      this.drawControlsPoint(this.controlPointPosWidthText,ctx)
       this.connectCtrolPoint(list,ctx)
       this.drawRotateControl(ctx)
       this.connectRotateControl(ctx)
       ctx.stroke()
       ctx.restore()
     }else{
-      ctx.save()
       ctx.beginPath()
-      this.drawControlsPoint(this.controlPointPos,ctx)
+      this.drawControlsPoint(this.controlPointPosWidthText,ctx)
       this.connectCtrolPoint(this.controlPointPos,ctx)
       this.drawRotateControl(ctx)
       this.connectRotateControl(ctx)
     }
   }
   // 绘制控制点
-  drawControlsPoint(list: DobuleNumber[],ctx: CanvasRenderingContext2D) {
+  drawControlsPoint(list: {pos: DobuleNumber;cursor: Direction}[],ctx: CanvasRenderingContext2D) {
     const { w,h } = this.point
-    list.forEach(([x,y])=>{
+    list.forEach(({pos,cursor})=>{
+      const [x,y] = pos
       const path = new Path2D()
       ctx.strokeStyle = 'blue'
       path.rect(x-w/2,y-h/2,w,h)
-      this.judgeIsPointInPath(ctx,path,Directions.northEstern)
+      this.judgeIsPointInPath(ctx,path,cursor)
       ctx.stroke(path)
     })
   }
@@ -103,12 +116,14 @@ export default class Rect extends BaseShape{
     const {w,h} = this.point
     list.forEach(([x,y],index)=>{
       if(index === 0) {
+        ctx.beginPath()
         ctx.moveTo(x,y)
       }
       ctx.lineTo(x,y)
     })
     ctx.closePath()
     ctx.strokeStyle = 'blue'
+    ctx.stroke()
   }
   rotateControlStart(pos: DobuleNumber) {
     const [cx,cy] = pos
@@ -139,6 +154,7 @@ export default class Rect extends BaseShape{
     const { rotateDeg } = this.shape
     const [x,y] = this.rotateControlCenter(this.referencePoint)
     const [cx,cy] = this.centerPosition
+    ctx.beginPath()
     if(rotateDeg) {
       ctx.moveTo(x-cx,y-cy)
       ctx.lineTo(x-cx,y+this.rotateY - cy)
@@ -147,5 +163,6 @@ export default class Rect extends BaseShape{
       ctx.moveTo(x,y)
       ctx.lineTo(x,y+this.rotateY)
     }
+    ctx.stroke()
   }
 }

@@ -49,8 +49,10 @@ export default class Canvas{
   }
   mouseUp() {
     const canvas = this.canvas
-    canvas.addEventListener('mouseover',e=>{
+    canvas.addEventListener('mouseup',e=>{
       const loc = this.windowLocToCanvas(e)
+      // 重置 clickPosition 的位置，当mousedown点击控制点的时候会去更新位置，其他时候默认为 default 
+      this.state.clickPositin = 'default'
     })
   }
   adaptShape(shape: Shape) {
