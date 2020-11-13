@@ -46,17 +46,12 @@
   // 绘制矩形形状
   let drawInitRect = () => {
     context.fillStyle = polygons.fillStyle
-    // context.strokeStyle = polygons.strokeStyle
     context.rect(initX,initY,initWidth,initHeight)
     polygons.loc.x = initX
     polygons.loc.y = initY
     polygons.width = initWidth
     polygons.height = initHeight
     context.fill()
-    // context.stroke()
-    // const {loc:{x,y},height,width} = polygons
-    // drawControl(x,y,height,width)
-    // drawLineRect(x,y,height,width)
   }
   function showControl(ev) {
     const isIn = context.isPointInPath(ev.clientX - canvas.offsetTop,ev.clientY-canvas.offsetLeft)
