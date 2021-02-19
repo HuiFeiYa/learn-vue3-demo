@@ -7,14 +7,14 @@
 <script lang='ts'>
   import { defineComponent } from 'vue';
   export default defineComponent({
-    data() {
+    data() :{itemRefs:HTMLElement[],list:Number[]} {
       return {
         list:[1,2,3],
-        itemRefs: []
+        itemRefs:[]
       }
     },
     methods: {
-      setItemRef(el) {
+      setItemRef(el:HTMLElement) {
           this.itemRefs.push(el)
         }
       },

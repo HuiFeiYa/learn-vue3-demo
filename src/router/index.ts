@@ -17,6 +17,10 @@ export default createRouter({
     {
       path: '/vue/ref',
       component: import('../view/ref/index.vue')
-    }
+    },
+    {
+      path: '/vue/async',
+      component: import('../view/async/Async.vue')
+    },
   ]
 })
